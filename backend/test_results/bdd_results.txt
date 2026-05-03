@@ -1,0 +1,9 @@
+
+> crm-backend@1.0.0 test:bdd
+> cucumber-js
+
+................................................................
+
+11 scenarios (11 passed)
+42 steps (42 passed)
+0m16.372s (executing steps: 0m16.336s)

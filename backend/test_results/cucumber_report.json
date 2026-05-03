@@ -1,0 +1,889 @@
+[
+  {
+    "description": "  As a CRM user\n  I want to log in with my credentials\n  So that I can access the system securely",
+    "elements": [
+      {
+        "description": "",
+        "id": "user-authentication;successful-login-with-valid-credentials",
+        "keyword": "Scenario",
+        "line": 6,
+        "name": "Successful login with valid credentials",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 1849708800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 7,
+            "name": "I log in with email \"bdd_auth_sales@test.wbocrm\" and password \"BddAuth123!\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:124"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 287041799
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 8,
+            "name": "the response status should be 200",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 118100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 9,
+            "name": "the response should contain a token",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:193"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 54000
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 10,
+            "name": "the token payload should include role \"sales\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:197"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 280999
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 317457500
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication;failed-login-with-invalid-password",
+        "keyword": "Scenario",
+        "line": 12,
+        "name": "Failed login with invalid password",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 910612000
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 13,
+            "name": "I log in with email \"bdd_auth_sales@test.wbocrm\" and password \"WrongPass999!\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:124"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 286386200
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 14,
+            "name": "the response status should be 401",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 72099
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 248554100
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication;rejected-request-without-token",
+        "keyword": "Scenario",
+        "line": 16,
+        "name": "Rejected request without token",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 909117100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 17,
+            "name": "I request the leads list without a token",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:130"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 3834200
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 18,
+            "name": "the response status should be 401",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 61999
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 252743300
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "user-authentication;rejected-request-with-insufficient-role",
+        "keyword": "Scenario",
+        "line": 20,
+        "name": "Rejected request with insufficient role",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 904962299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 21,
+            "name": "I am authenticated as a support user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:76"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 133700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 22,
+            "name": "I request the leads list",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:134"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4103699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 23,
+            "name": "the response status should be 403",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 59799
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 258408099
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "user-authentication",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "User Authentication",
+    "tags": [],
+    "uri": "tests\\features\\auth_login.feature"
+  },
+  {
+    "description": "  As a sales representative\n  I want to register new leads in the system\n  So that I can track potential customers",
+    "elements": [
+      {
+        "description": "",
+        "id": "lead-registration;successfully-register-a-new-lead",
+        "keyword": "Scenario",
+        "line": 9,
+        "name": "Successfully register a new lead",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 898232700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a sales user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:72"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 84100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 10,
+            "name": "I submit a new lead with email \"bdd_lead@test.wbocrm\" and name \"BDD Lead\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:116"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 106296700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 11,
+            "name": "the response status should be 201",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 225699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 12,
+            "name": "the response should contain a lead_id",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:181"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 116899
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 403706800
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "lead-registration;reject-duplicate-email-registration",
+        "keyword": "Scenario",
+        "line": 14,
+        "name": "Reject duplicate email registration",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 897006499
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a sales user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:72"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 53700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 15,
+            "name": "a lead with email \"bdd_dup@test.wbocrm\" already exists",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:80"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 104741500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 16,
+            "name": "I submit a new lead with email \"bdd_dup@test.wbocrm\" and name \"Dup Lead\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:116"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 52475300
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 17,
+            "name": "the response status should be 400",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 131799
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 18,
+            "name": "the response error should be \"DUPLICATE_EMAIL\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:189"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 104200
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 403973299
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "lead-registration",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Lead Registration",
+    "tags": [],
+    "uri": "tests\\features\\lead_registration.feature"
+  },
+  {
+    "description": "  As a sales representative\n  I want leads to be scored automatically\n  So that I can prioritize high-value prospects",
+    "elements": [
+      {
+        "description": "",
+        "id": "lead-priority-scoring;lead-with-high-engagement-metrics-receives-high-score",
+        "keyword": "Scenario",
+        "line": 9,
+        "name": "Lead with high engagement metrics receives high score",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 885445799
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a sales user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:72"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 39899
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 10,
+            "name": "I create a lead with metrics calls 20 meetings 5 budget \"high\" companySize \"enterprise\" emailOpens 20",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:155"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 107558900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 11,
+            "name": "the response status should be 201",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 100800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 12,
+            "name": "the lead priority_score should be greater than 70",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:206"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 139100
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 399256599
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "lead-priority-scoring;lead-with-no-engagement-receives-low-score",
+        "keyword": "Scenario",
+        "line": 14,
+        "name": "Lead with no engagement receives low score",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 892364400
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a sales user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:72"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 45299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 15,
+            "name": "I create a lead with metrics calls 0 meetings 0 budget \"low\" companySize \"small\" emailOpens 0",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:155"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 105601399
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 16,
+            "name": "the response status should be 201",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 81200
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 17,
+            "name": "the lead priority_score should be less than 30",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:213"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 121499
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 403900300
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "lead-priority-scoring;leads-list-is-sorted-by-priority-score-descending",
+        "keyword": "Scenario",
+        "line": 19,
+        "name": "Leads list is sorted by priority score descending",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 959266200
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a sales user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:72"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 42799
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 20,
+            "name": "I retrieve all leads",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:170"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 53639100
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 21,
+            "name": "the response status should be 200",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 54900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 22,
+            "name": "leads should be ordered by priority_score descending",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:220"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 103999
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 251535200
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "lead-priority-scoring",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Lead Priority Scoring",
+    "tags": [],
+    "uri": "tests\\features\\lead_scoring.feature"
+  },
+  {
+    "description": "  As a support agent\n  I want to create support tickets linked to leads\n  So that I can track customer issues",
+    "elements": [
+      {
+        "description": "",
+        "id": "support-ticket-creation;successfully-create-a-support-ticket",
+        "keyword": "Scenario",
+        "line": 9,
+        "name": "Successfully create a support ticket",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 902680700
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a support user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:76"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 48399
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 10,
+            "name": "a lead exists in the system",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:88"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 107971299
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 11,
+            "name": "I create a ticket with description \"BDD test ticket\" and priority \"Low\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:140"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 56023699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 12,
+            "name": "the response status should be 201",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 92800
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 13,
+            "name": "the response should contain a ticket_id",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:185"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 114799
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 452518299
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "support-ticket-creation;update-a-ticket-status",
+        "keyword": "Scenario",
+        "line": 15,
+        "name": "Update a ticket status",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 931924699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 7,
+            "name": "I am authenticated as a support user",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:76"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 44099
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Given ",
+            "line": 16,
+            "name": "an existing support ticket",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:97"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 162542500
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "When ",
+            "line": 17,
+            "name": "I update the ticket status to \"In Progress\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:148"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 110182699
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 18,
+            "name": "the response status should be 200",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:177"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 127900
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "And ",
+            "line": 19,
+            "name": "the ticket status should be \"In Progress\"",
+            "match": {
+              "location": "tests\\features\\step_definitions\\steps.js:202"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 212899
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 452085399
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "support-ticket-creation",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Support Ticket Creation",
+    "tags": [],
+    "uri": "tests\\features\\ticket_creation.feature"
+  }
+]

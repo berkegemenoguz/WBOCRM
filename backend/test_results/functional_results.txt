@@ -1,0 +1,4 @@
+
+> crm-backend@1.0.0 test:functional
+> jest tests/functional --forceExit
+
