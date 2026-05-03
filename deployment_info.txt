@@ -1,0 +1,14 @@
+# CRM SaaS Prototype — Deployment Info
+
+Frontend URL  : https://crm-prototype.vercel.app
+Backend URL   : https://crm-backend.onrender.com
+DB Platform   : Render Managed PostgreSQL
+
+Tech Stack:
+  Backend  : Node.js v20 + Express.js
+  Frontend : React v18 + Vite v5
+  Database : PostgreSQL 16
+  Auth     : JWT (jsonwebtoken) + bcryptjs
+
+Deployment Date: [TARİH]
+Team Leader    : [AD SOYAD]
