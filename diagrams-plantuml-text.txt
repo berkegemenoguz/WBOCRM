@@ -1,0 +1,346 @@
+1.6 System Context:
+
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(sales_user, "Sales User", "Tracks leads and manages sales pipelines.")
+Person(marketing_user, "Marketing User", "Executes campaigns and analyzes engagement.")
+Person(support_user, "Support User", "Handles customer tickets and inquiries.")
+
+System(crm_system, "Web-Based Operational CRM", "Centralizes SFA, Marketing, and Support within a SaaS environment.")
+
+System_Ext(cloud_platform, "Cloud Provider (Heroku/Azure)", "Hosts the application and manages database synchronization.")
+
+Rel(sales_user, crm_system, "Uses", "HTTPS")
+Rel(marketing_user, crm_system, "Uses", "HTTPS")
+Rel(support_user, crm_system, "Uses", "HTTPS")
+Rel(crm_system, cloud_platform, "Deployed on / Stores data in")
+@enduml
+
+3.2 Use Case:
+
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Sales Representative" as sales
+actor "Customer Support Staff" as support
+actor "System Administrator" as admin
+
+rectangle "Web-Based Operational CRM System" {
+  usecase "Register New Lead" as UC1
+  usecase "Calculate Lead Score" as UC2
+  usecase "Manage Sales Pipeline" as UC3
+  usecase "Generate Support Ticket" as UC4
+  usecase "Manage Ticket Status" as UC5
+  usecase "View Operational Dashboard" as UC6
+  usecase "Manage RBAC & Users" as UC7
+  
+  UC1 ..> UC2 : <<include>>
+}
+
+sales --> UC1
+sales --> UC3
+sales --> UC6
+
+support --> UC4
+support --> UC5
+support --> UC6
+
+admin --> UC7
+admin --> UC6
+
+@enduml
+
+3.3 ER Diagram
+
+@startuml
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define primary_key(x) <b><color:#b8861b><&key></color> x</b>
+!define foreign_key(x) <color:#aaaaaa><&key></color> x
+!define unique(x) <color:#3b82f6><&star></color> x
+
+hide circle
+hide methods
+
+skinparam class {
+    BackgroundColor White
+    BorderColor Black
+    ArrowColor Black
+}
+
+Table(UserAccount, "UserAccount") {
+  primary_key(user_id)
+  unique(user_email)
+  user_password
+  rbac_role
+  full_name
+}
+
+Table(Lead, "Lead") {
+  primary_key(lead_id)
+  unique(email)
+  contact_name
+  priority_score
+  pipeline_stage
+  foreign_key(user_id)
+}
+
+Table(SupportTicket, "SupportTicket") {
+  primary_key(ticket_id)
+  description
+  priority_level
+  status
+  foreign_key(lead_id)
+  foreign_key(user_id)
+}
+
+Table(InteractionLog, "InteractionLog") {
+  primary_key(log_id)
+  note_text
+  timestamp
+  foreign_key(lead_id)
+  foreign_key(user_id)
+}
+
+UserAccount "1" -- "N" Lead : manages >
+UserAccount "1" -- "N" SupportTicket : handles >
+UserAccount "1" -- "N" InteractionLog : authors >
+Lead "1" -- "N" SupportTicket : has >
+Lead "1" -- "N" InteractionLog : collects >
+
+@enduml
+
+3.4 Class Diagram:
+
+classDiagram
+
+class UserAccount {
+  +userId: int
+  +userEmail: String[48]
+  +userPasswordHash: String[255]
+  +rbacRole: String
+  +fullName: String
+  +authenticate()
+  +assignRole()
+  +viewDashboard()
+}
+
+class Lead {
+  +leadId: int
+  +contactName: String
+  +email: String
+  +priorityScore: float
+  +pipelineStage: String
+  +calculateScore()
+  +updatePipelineStage()
+  +assignToUser()
+}
+
+class SupportTicket {
+  +ticketId: int
+  +description: String
+  +priorityLevel: String
+  +status: String
+  +generateTicket()
+  +updateStatus()
+  +assignPriority()
+}
+
+class InteractionLog {
+  +logId: int
+  +noteText: String
+  +timestamp: DateTime
+  +addNote()
+  +getHistory()
+}
+
+UserAccount "1" --> "0..*" Lead : manages
+UserAccount "1" --> "0..*" SupportTicket : handles
+UserAccount "1" --> "0..*" InteractionLog : authors
+Lead "1" --> "0..*" SupportTicket : has
+Lead "1" --> "0..*" InteractionLog : collects
+
+3.5 Activity Diagram:
+
+flowchart TD
+    Start([Start]) --> Step1[Sales Rep opens Lead Management form]
+    Step1 --> Step2[Enter contact details and engagement metrics]
+    Step2 --> Step3[Submit Lead Data]
+    Step3 --> Decision{Is Email Unique?}
+    
+    Decision -- No (Scenario 3) --> Error[Display duplicate email error]
+    Error --> End1([End])
+    
+    Decision -- Yes (Scenario 1) --> Step4[Trigger Lead Scoring Algorithm]
+    Step4 --> Step5[Calculate Dynamic Priority Score]
+    Step5 --> Step6[(Save to PostgreSQL Database)]
+    Step6 --> Step7[Update Centralized Priority Dashboard]
+    Step7 --> End2([End])
+
+3.6 Sequence Diagram:
+
+sequenceDiagram
+    autonumber
+    actor SalesRep as Sales Representative
+    participant UI as React Frontend
+    participant API as Spring Boot API
+    participant Algo as Scoring Algorithm
+    participant DB as PostgreSQL DB
+
+    SalesRep->>UI: Submit new lead form
+    UI->>API: POST request with lead data
+    API->>DB: Query: checkUniqueEmail(email)
+    
+    alt Email exists (Scenario 3)
+        DB-->>API: Return true (Conflict)
+        API-->>UI: 400 Bad Request (Validation Error)
+        UI-->>SalesRep: Display "Duplicate Email" warning
+    else Email is unique (Scenario 1)
+        DB-->>API: Return false (Clear to proceed)
+        API->>Algo: calculateScore(engagementMetrics)
+        Algo-->>API: return priorityScore
+        API->>DB: saveLead(contactData, priorityScore)
+        DB-->>API: Success (Record ID created)
+        API-->>UI: 201 Created
+        UI-->>SalesRep: Refresh and display Prioritized Dashboard
+    end
+
+3.7 Component Diagram:
+
+@startuml
+skinparam componentStyle uml2
+skinparam BackgroundColor white
+
+package "Client Tier" {
+  [React Web SPA] as UI
+}
+
+package "Application Tier (Java Spring Boot)" {
+  [REST API Gateway] as API
+  [Lead Management Module] as LeadMod
+  [Customer Support Module] as SupportMod
+  [Lead Scoring Algorithm] as ScoreMod
+  [RBAC Security Module] as AuthMod
+}
+
+database "Data Tier" {
+  [PostgreSQL Database] as DB
+}
+
+UI <..> API : HTTPS / JSON
+API --> AuthMod : validates
+API --> LeadMod
+API --> SupportMod
+LeadMod --> ScoreMod : <<invoke>>
+LeadMod ..> DB : Read/Write
+SupportMod ..> DB : Read/Write
+AuthMod ..> DB : Read
+@enduml
+
+3.8 Package Diagram:
+
+@startuml
+skinparam BackgroundColor white
+
+package "com.crm.ui (Frontend)" {
+  [Dashboard Components]
+  [Form Components]
+}
+
+package "com.crm.api (Controllers)" {
+  [LeadController]
+  [TicketController]
+  [AuthController]
+}
+
+package "com.crm.core (Services)" {
+  [LeadService]
+  [ScoringService]
+  [TicketService]
+}
+
+package "com.crm.data (Repositories)" {
+  [LeadRepository]
+  [TicketRepository]
+  [UserRepository]
+}
+
+"com.crm.ui (Frontend)" ..> "com.crm.api (Controllers)" : HTTP Requests
+"com.crm.api (Controllers)" ..> "com.crm.core (Services)" : delegates
+"com.crm.core (Services)" ..> "com.crm.data (Repositories)" : queries
+@enduml
+
+3.9 Deployment Diagram:
+
+@startuml
+skinparam BackgroundColor white
+
+node "SME User Workstation" <<Client Device>> {
+  node "Modern Web Browser" {
+    artifact "React Single Page Application" as SPA
+  }
+}
+
+node "Heroku Cloud Environment" <<PaaS>> {
+  node "Application Web Server (Dyno)" {
+     artifact "Spring Boot Executable JAR" as Backend
+  }
+  
+  node "Managed Database Server" {
+     database "PostgreSQL Relational DB" as PostgreSQL
+  }
+}
+
+"SME User Workstation" -- "Heroku Cloud Environment" : TCP/IP (HTTPS)
+SPA <..> Backend : RESTful API calls
+Backend -- PostgreSQL : JDBC / SSL
+@enduml
+
+3.10 System Architecture Diagram:
+
+@startuml
+skinparam BackgroundColor white
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+package "Presentation Layer (Client Tier)" {
+    [React Web Application (SPA)] as UI
+    note right of UI : Cross-platform web interface\nfor SME staff (Sales, Support).
+}
+
+package "Business Logic Layer (Application Tier - Spring Boot)" {
+    [REST API Gateway] as API
+    
+    package "Core Business Modules" {
+        [Security & RBAC Module] as Security
+        [Lead & Sales Management] as Sales
+        [Customer Support Module] as Support
+        [Automated Lead Scoring Engine] as Engine
+    }
+}
+
+package "Data Access Layer (Storage Tier)" {
+    database "PostgreSQL Database" as DB
+    note right of DB : Centralized Single Source of Truth\n(Leads, Tickets, Logs, Users).
+}
+
+cloud "Deployment Environment (Heroku Cloud)" {
+    note "Hosts Application and Database" as CloudNote
+}
+
+' Data Flow and Relationships
+UI <--> API : "HTTPS / JSON (REST)"
+API --> Security : "Authenticates & Authorizes"
+API --> Sales : "Routes Lead/Sales Data"
+API --> Support : "Routes Ticket Data"
+
+Sales <--> Engine : "Requests Dynamic Score"
+
+Sales <--> DB : "Read/Write (JDBC)"
+Support <--> DB : "Read/Write (JDBC)"
+Security <--> DB : "Query Credentials"
+
+@enduml

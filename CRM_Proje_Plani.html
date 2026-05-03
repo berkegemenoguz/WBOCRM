@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web-Based Operational CRM — Proje Planı (HW5 Part 2)</title>
+<style>
+  :root {
+    --primary: #1e3a5f;
+    --accent: #2e7d9e;
+    --accent2: #3bb77e;
+    --danger: #d94f4f;
+    --warn: #e8a838;
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #1a1a2e;
+    --muted: #6b7280;
+    --border: #dde3ef;
+    --code-bg: #1e2233;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.65; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--primary) 0%, #2a5298 100%);
+    color: white; padding: 48px 40px 36px; border-bottom: 4px solid var(--accent);
+  }
+  header .badge {
+    display: inline-block; background: var(--warn); color: #1a1a2e;
+    font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px;
+  }
+  header h1 { font-size: 2.1rem; font-weight: 800; margin-bottom: 6px; }
+  header p  { font-size: 1rem; opacity: 0.82; }
+  .meta-row { display: flex; gap: 32px; margin-top: 20px; flex-wrap: wrap; }
+  .meta-item { font-size: 0.85rem; opacity: 0.8; }
+  .meta-item strong { display: block; opacity: 1; font-size: 0.95rem; color: #fff; }
+
+  /* ── LAYOUT ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── SECTION ── */
+  .section { margin-bottom: 52px; }
+  .section-title {
+    font-size: 1.35rem; font-weight: 800; color: var(--primary);
+    border-left: 5px solid var(--accent); padding-left: 14px;
+    margin-bottom: 22px;
+  }
+  .section-title span { color: var(--accent); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px 28px; margin-bottom: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; color: var(--primary); }
+
+  /* ── GRID ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media(max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ── TECH BADGES ── */
+  .tech-stack { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .tech { display: flex; align-items: center; gap: 8px; background: var(--primary);
+    color: white; border-radius: 8px; padding: 8px 16px; font-size: 0.88rem; font-weight: 600; }
+  .tech .icon { font-size: 1.1rem; }
+  .tech.green  { background: #1b6b45; }
+  .tech.teal   { background: #1a6070; }
+  .tech.purple { background: #4b3a7a; }
+  .tech.orange { background: #7a4020; }
+
+  /* ── TAGS ── */
+  .tag { display: inline-block; border-radius: 6px; padding: 2px 9px;
+    font-size: 0.75rem; font-weight: 700; letter-spacing: 0.4px; margin: 2px; }
+  .tag-m  { background: #fde68a; color: #78350f; }
+  .tag-s  { background: #bfdbfe; color: #1e3a5f; }
+  .tag-c  { background: #d1fae5; color: #065f46; }
+  .tag-nfr { background: #ede9fe; color: #4c1d95; }
+
+  /* ── TABLE ── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+  th { background: var(--primary); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #f8faff; }
+  tr:hover td { background: #edf2ff; }
+
+  /* ── CODE ── */
+  pre, code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.83rem;
+  }
+  pre {
+    background: var(--code-bg); color: #e2e8f0;
+    padding: 16px 20px; border-radius: 10px;
+    overflow-x: auto; line-height: 1.55; margin: 8px 0;
+  }
+  .cm  { color: #6a9955; }  /* comment */
+  .kw  { color: #569cd6; }  /* keyword */
+  .st  { color: #ce9178; }  /* string */
+  .fn  { color: #dcdcaa; }  /* function */
+  .nu  { color: #b5cea8; }  /* number */
+
+  /* ── RULES ── */
+  .rule {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 10px;
+  }
+  .rule-num {
+    min-width: 32px; height: 32px; border-radius: 50%;
+    background: var(--primary); color: white;
+    font-weight: 800; font-size: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .rule-num.warn  { background: var(--warn); color: #1a1a2e; }
+  .rule-num.danger { background: var(--danger); }
+  .rule-num.green  { background: var(--accent2); }
+  .rule-body h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+  .rule-body p  { font-size: 0.85rem; color: var(--muted); }
+
+  /* ── PHASE TIMELINE ── */
+  .phases { position: relative; padding-left: 28px; }
+  .phases::before {
+    content: ''; position: absolute; left: 10px; top: 0; bottom: 0;
+    width: 3px; background: linear-gradient(to bottom, var(--accent), var(--accent2));
+    border-radius: 3px;
+  }
+  .phase {
+    position: relative; background: var(--card);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 22px; margin-bottom: 14px;
+  }
+  .phase::before {
+    content: ''; position: absolute; left: -23px; top: 20px;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--accent); border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .phase-label {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--accent); margin-bottom: 4px;
+  }
+  .phase h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .phase ul { padding-left: 18px; font-size: 0.875rem; color: #374151; }
+  .phase ul li { margin-bottom: 3px; }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; padding: 0; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 0.88rem;
+  }
+  .checklist li:last-child { border: none; }
+  .chk { min-width: 20px; height: 20px; border: 2px solid var(--accent);
+    border-radius: 4px; display: inline-block; margin-top: 1px; }
+
+  /* ── ALERT BOXES ── */
+  .alert {
+    border-radius: 10px; padding: 14px 18px; margin: 12px 0;
+    font-size: 0.875rem; display: flex; gap: 12px; align-items: flex-start;
+  }
+  .alert-warn { background: #fef9e7; border: 1px solid #f0c040; }
+  .alert-danger { background: #fef2f2; border: 1px solid #fca5a5; }
+  .alert-info  { background: #eff6ff; border: 1px solid #93c5fd; }
+  .alert-ok    { background: #f0fdf4; border: 1px solid #86efac; }
+  .alert-icon { font-size: 1.2rem; min-width: 22px; }
+
+  /* ── BDD ── */
+  .bdd {
+    background: #0f1923; border-radius: 10px; padding: 18px 22px;
+    font-family: 'Cascadia Code', monospace; font-size: 0.84rem;
+    line-height: 1.7; margin: 8px 0;
+  }
+  .bdd .given { color: #56b6c2; }
+  .bdd .when  { color: #e5c07b; }
+  .bdd .then  { color: #98c379; }
+  .bdd .feat  { color: #c678dd; font-weight: 700; }
+  .bdd .scen  { color: #61afef; font-weight: 700; }
+
+  /* ── SVG FLOWCHARTS ── */
+  .chart-wrap {
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .chart-wrap svg { display: block; margin: 0 auto; }
+
+  /* ── ENDPOINT PILLS ── */
+  .endpoint { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .endpoint:last-child { border: none; }
+  .method { font-weight: 800; padding: 2px 10px; border-radius: 5px; font-size: 0.78rem; min-width: 52px; text-align: center; }
+  .GET    { background: #dbeafe; color: #1d4ed8; }
+  .POST   { background: #dcfce7; color: #15803d; }
+  .PUT    { background: #fef9c3; color: #a16207; }
+  .DELETE { background: #fee2e2; color: #b91c1c; }
+  .PATCH  { background: #ede9fe; color: #6d28d9; }
+  .endpoint-path { font-family: monospace; flex: 1; }
+  .endpoint-desc { color: var(--muted); font-size: 0.8rem; }
+
+  /* ── SUBMISSION ── */
+  .folder-tree {
+    background: var(--code-bg); color: #e2e8f0; border-radius: 10px;
+    padding: 20px; font-family: monospace; font-size: 0.85rem; line-height: 2;
+  }
+  .folder-tree .dir  { color: #79c0ff; }
+  .folder-tree .file { color: #e2e8f0; }
+  .folder-tree .note { color: #6a9955; }
+
+  hr { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+  .toc-link { color: var(--accent); text-decoration: none; font-size: 0.88rem; }
+  .toc-link:hover { text-decoration: underline; }
+  .pill { display: inline-block; background: var(--accent); color: white; border-radius: 20px; padding: 2px 10px; font-size: 0.75rem; font-weight: 700; margin-left: 6px; }
+  .pill.red { background: var(--danger); }
+  .pill.green { background: var(--accent2); }
+  .pill.warn { background: var(--warn); color: #1a1a2e; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ HEADER -->
+<header>
+  <div class="badge">HW5 — Part 2 Proje Planı</div>
+  <h1>Web-Based Operational CRM</h1>
+  <p>First SaaS Prototype — Geliştirici Proje Planı & Kurallar Kılavuzu</p>
+  <div class="meta-row">
+    <div class="meta-item"><strong>Son Teslim</strong>6 Mayıs 2026, Çarşamba</div>
+    <div class="meta-item"><strong>Backend</strong>Node.js (Express)</div>
+    <div class="meta-item"><strong>Frontend</strong>React (Vite)</div>
+    <div class="meta-item"><strong>Veritabanı</strong>PostgreSQL</div>
+    <div class="meta-item"><strong>Deployment</strong>Vercel + Render</div>
+    <div class="meta-item"><strong>Paradigma</strong>BDD / TDD</div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════ MAIN -->
+<div class="container">
+
+<!-- ─────── 0. İÇİNDEKİLER ─────── -->
+<div class="section">
+  <div class="section-title"><span>§0</span> İçindekiler</div>
+  <div class="card" style="columns:2; gap:32px; font-size:0.88rem;">
+    <p><a class="toc-link" href="#scope">§1 Proje Kapsamı & Amaç</a></p>
+    <p><a class="toc-link" href="#stack">§2 Teknoloji Yığını</a></p>
+    <p><a class="toc-link" href="#arch">§3 Mimari</a></p>
+    <p><a class="toc-link" href="#db">§4 Veritabanı Şeması</a></p>
+    <p><a class="toc-link" href="#flowchart-dev">§5 Geliştirme Akış Şeması</a></p>
+    <p><a class="toc-link" href="#flowchart-lead">§6 Lead Kayıt Akış Şeması</a></p>
+    <p><a class="toc-link" href="#api">§7 API Endpoint Tablosu</a></p>
+    <p><a class="toc-link" href="#phases">§8 Geliştirme Fazları</a></p>
+    <p><a class="toc-link" href="#userstories">§9 User Stories</a></p>
+    <p><a class="toc-link" href="#bdd">§10 BDD / Acceptance Criteria</a></p>
+    <p><a class="toc-link" href="#testing">§11 Test Stratejisi</a></p>
+    <p><a class="toc-link" href="#rules">§12 Geliştirici Kuralları</a></p>
+    <p><a class="toc-link" href="#deploy">§13 Deployment Rehberi</a></p>
+    <p><a class="toc-link" href="#checklist">§14 Teslim Kontrol Listesi</a></p>
+  </div>
+</div>
+
+<!-- ─────── 1. KAPSAM ─────── -->
+<div id="scope" class="section">
+  <div class="section-title"><span>§1</span> Proje Kapsamı & Amaç</div>
+
+  <div class="alert alert-info">
+    <span class="alert-icon">ℹ️</span>
+    <div>Bu plan, HW5 Part 2 kapsamında <strong>dikey bir dilim (vertical slice)</strong> prototip geliştirmek için hazırlanmıştır. Tam sistem değil; çalışan uçtan uca bir akış gösterilmesi beklenmektedir: <strong>UI → Backend → Database → Response</strong>.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>🎯 Prototype Minimum Kapsamı</h3>
+      <ul style="padding-left:18px; font-size:0.875rem; margin-top:8px;">
+        <li>✅ <strong>Home / Login Sayfası</strong> — Kimlik doğrulama girişi</li>
+        <li>✅ <strong>Lead Yönetim Sayfası</strong> — Lead kayıt + skor görüntüleme</li>
+        <li>✅ <strong>Destek Bileti Sayfası</strong> — Bilet oluşturma & durum yönetimi</li>
+        <li>✅ <strong>Çalışan uçtan uca akış</strong></li>
+        <li>✅ <strong>Cloud deployment</strong></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>👥 Aktörler & Roller (RBAC)</h3>
+      <ul style="padding-left:18px; font-size:0.875rem; margin-top:8px;">
+        <li><strong>Sales Representative</strong> — Lead yönetimi, pipeline, dashboard</li>
+        <li><strong>Customer Support Staff</strong> — Bilet yönetimi, durum güncelleme</li>
+        <li><strong>System Administrator</strong> — Kullanıcı yönetimi, RBAC atama</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📋 Kapsama Alınan Use Case'ler (Gereksinimlerden)</h3>
+    <table>
+      <tr><th>Use Case ID</th><th>Açıklama</th><th>Aktör</th><th>Öncelik</th></tr>
+      <tr><td>UC1</td><td>Register New Lead</td><td>Sales Rep</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC2</td><td>Calculate Lead Score (Dynamic Priority Score)</td><td>Sistem</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC3</td><td>Manage Sales Pipeline (stage güncelleme)</td><td>Sales Rep</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC4</td><td>Generate Support Ticket</td><td>Support Staff</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC5</td><td>Manage Ticket Status</td><td>Support Staff</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC6</td><td>View Operational Dashboard (Priority Dashboard)</td><td>Tüm roller</td><td><span class="tag tag-m">M</span></td></tr>
+      <tr><td>UC7</td><td>Manage RBAC & Users</td><td>Admin</td><td><span class="tag tag-s">S</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ─────── 2. TEKNOLOJİ ─────── -->
+<div id="stack" class="section">
+  <div class="section-title"><span>§2</span> Teknoloji Yığını</div>
+
+  <div class="tech-stack" style="margin-bottom:20px;">
+    <div class="tech"><span class="icon">🟢</span> Node.js + Express.js <small style="opacity:.7; font-size:.75rem; margin-left:4px;">Backend</small></div>
+    <div class="tech green"><span class="icon">⚛️</span> React + Vite <small style="opacity:.7; font-size:.75rem; margin-left:4px;">Frontend</small></div>
+    <div class="tech teal"><span class="icon">🐘</span> PostgreSQL <small style="opacity:.7; font-size:.75rem; margin-left:4px;">Database</small></div>
+    <div class="tech purple"><span class="icon">▲</span> Vercel <small style="opacity:.7; font-size:.75rem; margin-left:4px;">Frontend Deploy</small></div>
+    <div class="tech orange"><span class="icon">☁️</span> Render <small style="opacity:.7; font-size:.75rem; margin-left:4px;">Backend + DB Deploy</small></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Backend Paketleri</h3>
+      <pre><span class="cm">// package.json dependencies</span>
+<span class="st">"express"</span>: <span class="st">"^4.18"</span>
+<span class="st">"pg"</span>: <span class="st">"^8.11"</span>          <span class="cm">// PostgreSQL driver</span>
+<span class="st">"bcryptjs"</span>: <span class="st">"^2.4"</span>    <span class="cm">// Şifre hash (NFR-ST-08)</span>
+<span class="st">"jsonwebtoken"</span>: <span class="st">"^9"</span>  <span class="cm">// JWT auth (NFR-ST-09)</span>
+<span class="st">"cors"</span>: <span class="st">"^2.8"</span>
+<span class="st">"dotenv"</span>: <span class="st">"^16"</span>
+<span class="st">"express-validator"</span>: <span class="st">"^7"</span>
+
+<span class="cm">// devDependencies</span>
+<span class="st">"jest"</span>: <span class="st">"^29"</span>
+<span class="st">"supertest"</span>: <span class="st">"^6"</span>
+<span class="st">"@cucumber/cucumber"</span>: <span class="st">"^10"</span></pre>
+    </div>
+    <div class="card">
+      <h3>Frontend Paketleri</h3>
+      <pre><span class="cm">// package.json dependencies</span>
+<span class="st">"react"</span>: <span class="st">"^18"</span>
+<span class="st">"react-dom"</span>: <span class="st">"^18"</span>
+<span class="st">"react-router-dom"</span>: <span class="st">"^6"</span>
+<span class="st">"axios"</span>: <span class="st">"^1.6"</span>       <span class="cm">// HTTP istekleri</span>
+
+<span class="cm">// devDependencies</span>
+<span class="st">"vite"</span>: <span class="st">"^5"</span>
+<span class="st">"vitest"</span>: <span class="st">"^1"</span>          <span class="cm">// Unit tests</span>
+<span class="st">"@testing-library/react"</span>: <span class="st">"^14"</span></pre>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">
+    <span class="alert-icon">⚠️</span>
+    <div><strong>Kısıt Notu:</strong> Orijinal diyagramlarda Spring Boot / Java referansları bulunmaktadır. Bu plan, ödevde belirlenen <strong>Node.js + React</strong> yığınına göre adapte edilmiştir. Mimari prensipler (3-tier, MVC, RESTful) aynı şekilde uygulanacaktır.</div>
+  </div>
+</div>
+
+<!-- ─────── 3. MİMARİ ─────── -->
+<div id="arch" class="section">
+  <div class="section-title"><span>§3</span> Mimari (3-Tier + MVC Layered)</div>
+
+  <div class="alert alert-ok" style="margin-bottom:20px;">
+    <span class="alert-icon">✅</span>
+    <div>Ödev gereği <strong>3-Tier Mimari zorunludur</strong>: Presentation Layer (React) → Logic Layer (Node/Express) → Data Layer (PostgreSQL). Backend içinde MVC benzeri katmanlı yapı uygulanacaktır.</div>
+  </div>
+
+  <!-- Architecture SVG Diagram -->
+  <div class="chart-wrap" style="margin-bottom:20px;">
+    <svg width="900" height="380" viewBox="0 0 900 380" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,system-ui,sans-serif">
+      <!-- Background zones -->
+      <!-- Client -->
+      <rect x="20" y="30" width="180" height="310" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+      <text x="110" y="22" text-anchor="middle" font-size="11" fill="#1e40af" font-weight="700">CLIENT TIER</text>
+      <!-- App -->
+      <rect x="230" y="30" width="420" height="310" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+      <text x="440" y="22" text-anchor="middle" font-size="11" fill="#15803d" font-weight="700">APPLICATION TIER (Node.js / Express)</text>
+      <!-- Data -->
+      <rect x="680" y="30" width="200" height="310" rx="12" fill="#faf5ff" stroke="#c4b5fd" stroke-width="1.5"/>
+      <text x="780" y="22" text-anchor="middle" font-size="11" fill="#6d28d9" font-weight="700">DATA TIER</text>
+
+      <!-- Browser box -->
+      <rect x="35" y="55" width="150" height="60" rx="8" fill="#1e3a5f" stroke="#60a5fa" stroke-width="1.5"/>
+      <text x="110" y="82" text-anchor="middle" font-size="11" fill="white" font-weight="700">Web Browser</text>
+      <text x="110" y="98" text-anchor="middle" font-size="10" fill="#93c5fd">React SPA (Vercel)</text>
+
+      <!-- React pages -->
+      <rect x="35" y="135" width="150" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="110" y="152" text-anchor="middle" font-size="10" fill="#1e3a5f">/ Login Page</text>
+      <rect x="35" y="167" width="150" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="110" y="184" text-anchor="middle" font-size="10" fill="#1e3a5f">/ Lead Management</text>
+      <rect x="35" y="199" width="150" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="110" y="216" text-anchor="middle" font-size="10" fill="#1e3a5f">/ Support Tickets</text>
+      <rect x="35" y="231" width="150" height="26" rx="5" fill="#dbeafe" stroke="#93c5fd"/>
+      <text x="110" y="248" text-anchor="middle" font-size="10" fill="#1e3a5f">/ Dashboard</text>
+
+      <!-- Arrow client→app -->
+      <line x1="185" y1="185" x2="230" y2="185" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="207" y="178" text-anchor="middle" font-size="9" fill="#6b7280">HTTPS/JSON</text>
+
+      <!-- Controller layer -->
+      <rect x="245" y="55" width="120" height="150" rx="8" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="305" y="74" text-anchor="middle" font-size="10" fill="#15803d" font-weight="700">Controller Layer</text>
+      <rect x="255" y="82" width="100" height="20" rx="4" fill="#15803d"/>
+      <text x="305" y="95" text-anchor="middle" font-size="9.5" fill="white">AuthController</text>
+      <rect x="255" y="108" width="100" height="20" rx="4" fill="#15803d"/>
+      <text x="305" y="121" text-anchor="middle" font-size="9.5" fill="white">LeadController</text>
+      <rect x="255" y="134" width="100" height="20" rx="4" fill="#15803d"/>
+      <text x="305" y="147" text-anchor="middle" font-size="9.5" fill="white">TicketController</text>
+      <rect x="255" y="160" width="100" height="20" rx="4" fill="#15803d"/>
+      <text x="305" y="173" text-anchor="middle" font-size="9.5" fill="white">LogController</text>
+
+      <!-- Arrow controller→service -->
+      <line x1="365" y1="140" x2="395" y2="140" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Service layer -->
+      <rect x="395" y="55" width="120" height="170" rx="8" fill="#ecfdf5" stroke="#34d399" stroke-width="1.5"/>
+      <text x="455" y="74" text-anchor="middle" font-size="10" fill="#065f46" font-weight="700">Service Layer</text>
+      <rect x="405" y="82" width="100" height="20" rx="4" fill="#065f46"/>
+      <text x="455" y="95" text-anchor="middle" font-size="9.5" fill="white">AuthService</text>
+      <rect x="405" y="108" width="100" height="20" rx="4" fill="#065f46"/>
+      <text x="455" y="121" text-anchor="middle" font-size="9.5" fill="white">LeadService</text>
+      <rect x="405" y="134" width="100" height="20" rx="4" fill="#065f46"/>
+      <text x="455" y="147" text-anchor="middle" font-size="9.5" fill="white">ScoringService</text>
+      <rect x="405" y="160" width="100" height="20" rx="4" fill="#065f46"/>
+      <text x="455" y="173" text-anchor="middle" font-size="9.5" fill="white">TicketService</text>
+      <rect x="405" y="186" width="100" height="20" rx="4" fill="#065f46"/>
+      <text x="455" y="199" text-anchor="middle" font-size="9.5" fill="white">LogService</text>
+
+      <!-- RBAC Middleware -->
+      <rect x="245" y="230" width="270" height="40" rx="8" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="380" y="248" text-anchor="middle" font-size="10" fill="#78350f" font-weight="700">RBAC Middleware (JWT + Role Check)</text>
+      <text x="380" y="262" text-anchor="middle" font-size="9" fill="#78350f">NFR-ST-02 — bcryptjs + jsonwebtoken</text>
+
+      <!-- Arrow service→repo -->
+      <line x1="515" y1="140" x2="545" y2="140" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+
+      <!-- Repository layer -->
+      <rect x="545" y="55" width="120" height="150" rx="8" fill="#faf5ff" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="605" y="74" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="700">Repository Layer</text>
+      <rect x="555" y="82" width="100" height="20" rx="4" fill="#4c1d95"/>
+      <text x="605" y="95" text-anchor="middle" font-size="9.5" fill="white">UserRepository</text>
+      <rect x="555" y="108" width="100" height="20" rx="4" fill="#4c1d95"/>
+      <text x="605" y="121" text-anchor="middle" font-size="9.5" fill="white">LeadRepository</text>
+      <rect x="555" y="134" width="100" height="20" rx="4" fill="#4c1d95"/>
+      <text x="605" y="147" text-anchor="middle" font-size="9.5" fill="white">TicketRepository</text>
+      <rect x="555" y="160" width="100" height="20" rx="4" fill="#4c1d95"/>
+      <text x="605" y="173" text-anchor="middle" font-size="9.5" fill="white">LogRepository</text>
+
+      <!-- Arrow repo→db -->
+      <line x1="665" y1="140" x2="695" y2="140" stroke="#6b7280" stroke-width="1.5" marker-end="url(#arr)"/>
+      <text x="680" y="133" text-anchor="middle" font-size="9" fill="#6b7280">SQL/SSL</text>
+
+      <!-- PostgreSQL -->
+      <rect x="695" y="55" width="170" height="250" rx="8" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+      <text x="780" y="74" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="700">PostgreSQL DB</text>
+      <text x="780" y="88" text-anchor="middle" font-size="9" fill="#6b7280">(Render Managed)</text>
+      <rect x="705" y="98" width="150" height="22" rx="4" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="780" y="113" text-anchor="middle" font-size="9.5" fill="#4c1d95">📋 UserAccount</text>
+      <rect x="705" y="126" width="150" height="22" rx="4" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="780" y="141" text-anchor="middle" font-size="9.5" fill="#4c1d95">📋 Lead</text>
+      <rect x="705" y="154" width="150" height="22" rx="4" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="780" y="169" text-anchor="middle" font-size="9.5" fill="#4c1d95">📋 SupportTicket</text>
+      <rect x="705" y="182" width="150" height="22" rx="4" fill="#ede9fe" stroke="#a78bfa"/>
+      <text x="780" y="197" text-anchor="middle" font-size="9.5" fill="#4c1d95">📋 InteractionLog</text>
+
+      <!-- Deployment labels -->
+      <rect x="35" y="298" width="150" height="24" rx="5" fill="#6366f1"/>
+      <text x="110" y="314" text-anchor="middle" font-size="9.5" fill="white" font-weight="700">▲ Vercel (Frontend)</text>
+      <rect x="245" y="298" width="392" height="24" rx="5" fill="#f97316"/>
+      <text x="440" y="314" text-anchor="middle" font-size="9.5" fill="white" font-weight="700">☁️ Render (Backend API)</text>
+      <rect x="695" y="314" width="170" height="24" rx="5" fill="#7c3aed"/>
+      <text x="780" y="330" text-anchor="middle" font-size="9.5" fill="white" font-weight="700">☁️ Render (PostgreSQL)</text>
+
+      <!-- Arrow markers -->
+      <defs>
+        <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L8,3 z" fill="#6b7280"/>
+        </marker>
+      </defs>
+    </svg>
+    <p style="text-align:center; font-size:0.78rem; color:#6b7280; margin-top:8px;">Şekil 1 — Sistem Mimarisi (3-Tier + MVC Layered)</p>
+  </div>
+
+  <div class="card">
+    <h3>📁 Proje Klasör Yapısı</h3>
+    <div class="grid-2">
+      <div>
+        <p style="font-size:0.8rem; font-weight:700; margin-bottom:6px; color:var(--accent);">Backend (Node.js)</p>
+        <div class="folder-tree">
+<span class="dir">backend/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="dir">controllers/</span>    <span class="note"># Controller katmanı</span>
+│   │   ├── authController.js
+│   │   ├── leadController.js
+│   │   ├── ticketController.js
+│   │   └── logController.js
+│   ├── <span class="dir">services/</span>       <span class="note"># İş mantığı</span>
+│   │   ├── authService.js
+│   │   ├── leadService.js
+│   │   ├── scoringService.js
+│   │   └── ticketService.js
+│   ├── <span class="dir">repositories/</span>   <span class="note"># DB sorguları</span>
+│   │   ├── leadRepository.js
+│   │   ├── ticketRepository.js
+│   │   └── userRepository.js
+│   ├── <span class="dir">middleware/</span>
+│   │   ├── authMiddleware.js
+│   │   └── rbacMiddleware.js
+│   ├── <span class="dir">routes/</span>
+│   │   └── index.js
+│   └── <span class="dir">db/</span>
+│       └── pool.js             <span class="note"># pg Pool</span>
+├── <span class="dir">tests/</span>
+│   ├── <span class="dir">unit/</span>
+│   ├── <span class="dir">functional/</span>
+│   └── <span class="dir">features/</span>       <span class="note"># Cucumber .feature</span>
+├── .env
+└── server.js</div>
+      </div>
+      <div>
+        <p style="font-size:0.8rem; font-weight:700; margin-bottom:6px; color:var(--accent);">Frontend (React)</p>
+        <div class="folder-tree">
+<span class="dir">frontend/</span>
+├── <span class="dir">src/</span>
+│   ├── <span class="dir">pages/</span>
+│   │   ├── LoginPage.jsx
+│   │   ├── DashboardPage.jsx
+│   │   ├── LeadPage.jsx
+│   │   └── TicketPage.jsx
+│   ├── <span class="dir">components/</span>
+│   │   ├── LeadForm.jsx
+│   │   ├── TicketForm.jsx
+│   │   ├── PriorityTable.jsx
+│   │   └── NavBar.jsx
+│   ├── <span class="dir">services/</span>
+│   │   └── api.js              <span class="note"># axios instance</span>
+│   ├── <span class="dir">context/</span>
+│   │   └── AuthContext.jsx
+│   └── App.jsx
+├── <span class="dir">tests/</span>
+├── vite.config.js
+└── vercel.json</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 4. VERİTABANI ─────── -->
+<div id="db" class="section">
+  <div class="section-title"><span>§4</span> Veritabanı Şeması (ER Diyagramından)</div>
+
+  <div class="card">
+    <h3>SQL Şema Tanımları</h3>
+    <pre><span class="cm">-- UserAccount (NFR-ST-02: RBAC, NFR-ST-08: bcrypt hash)</span>
+<span class="kw">CREATE TABLE</span> UserAccount (
+  user_id       SERIAL <span class="kw">PRIMARY KEY</span>,
+  user_email    VARCHAR(48) <span class="kw">UNIQUE NOT NULL</span>,   <span class="cm">-- class diagram: String[48]</span>
+  user_password VARCHAR(255) <span class="kw">NOT NULL</span>,         <span class="cm">-- bcrypt hash</span>
+  rbac_role     VARCHAR(20) <span class="kw">NOT NULL</span>           <span class="cm">-- 'sales'|'support'|'admin'</span>
+                <span class="kw">CHECK</span> (rbac_role <span class="kw">IN</span> (<span class="st">'sales'</span>,<span class="st">'support'</span>,<span class="st">'admin'</span>)),
+  full_name     VARCHAR(100) <span class="kw">NOT NULL</span>
+);
+
+<span class="cm">-- Lead (FR-ST-01, FR-UC-02)</span>
+<span class="kw">CREATE TABLE</span> Lead (
+  lead_id        SERIAL <span class="kw">PRIMARY KEY</span>,
+  email          VARCHAR(100) <span class="kw">UNIQUE NOT NULL</span>,  <span class="cm">-- UC2: email uniqueness check</span>
+  contact_name   VARCHAR(100) <span class="kw">NOT NULL</span>,
+  priority_score DECIMAL(5,2) <span class="kw">DEFAULT</span> <span class="nu">0.0</span>,     <span class="cm">-- UC2: dynamic score (≤500ms: NFR-SC-01)</span>
+  pipeline_stage VARCHAR(50) <span class="kw">DEFAULT</span> <span class="st">'New'</span>,    <span class="cm">-- UC3: pipeline stage</span>
+  user_id        INTEGER <span class="kw">REFERENCES</span> UserAccount(user_id),
+  created_at     TIMESTAMP <span class="kw">DEFAULT NOW</span>()
+);
+
+<span class="cm">-- SupportTicket (FR-ST-05, FR-ST-07)</span>
+<span class="kw">CREATE TABLE</span> SupportTicket (
+  ticket_id     SERIAL <span class="kw">PRIMARY KEY</span>,
+  description   TEXT <span class="kw">NOT NULL</span>,
+  priority_level VARCHAR(10) <span class="kw">NOT NULL</span>
+                <span class="kw">CHECK</span> (priority_level <span class="kw">IN</span> (<span class="st">'Low'</span>,<span class="st">'Medium'</span>,<span class="st">'High'</span>)),  <span class="cm">-- FR-SC-10</span>
+  status        VARCHAR(20) <span class="kw">DEFAULT</span> <span class="st">'Open'</span>
+                <span class="kw">CHECK</span> (status <span class="kw">IN</span> (<span class="st">'Open'</span>,<span class="st">'In Progress'</span>,<span class="st">'Resolved'</span>,<span class="st">'Closed'</span>)),
+  lead_id       INTEGER <span class="kw">REFERENCES</span> Lead(lead_id),
+  user_id       INTEGER <span class="kw">REFERENCES</span> UserAccount(user_id),
+  created_at    TIMESTAMP <span class="kw">DEFAULT NOW</span>()
+);
+
+<span class="cm">-- InteractionLog (FR-ST-04)</span>
+<span class="kw">CREATE TABLE</span> InteractionLog (
+  log_id    SERIAL <span class="kw">PRIMARY KEY</span>,
+  note_text TEXT <span class="kw">NOT NULL</span>,
+  timestamp TIMESTAMP <span class="kw">DEFAULT NOW</span>(),
+  lead_id   INTEGER <span class="kw">REFERENCES</span> Lead(lead_id),
+  user_id   INTEGER <span class="kw">REFERENCES</span> UserAccount(user_id)
+);</pre>
+  </div>
+</div>
+
+<!-- ─────── 5. GELİŞTİRME AKIŞ ŞEMASI ─────── -->
+<div id="flowchart-dev" class="section">
+  <div class="section-title"><span>§5</span> Geliştirme Akış Şeması</div>
+
+  <div class="chart-wrap">
+    <svg width="860" height="820" viewBox="0 0 860 820" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,system-ui,sans-serif" font-size="11">
+      <defs>
+        <marker id="a2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#374151"/>
+        </marker>
+        <filter id="sh">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12"/>
+        </filter>
+      </defs>
+
+      <!-- START -->
+      <ellipse cx="430" cy="36" rx="90" ry="24" fill="#1e3a5f" filter="url(#sh)"/>
+      <text x="430" y="40" text-anchor="middle" fill="white" font-weight="700">BAŞLA</text>
+
+      <line x1="430" y1="60" x2="430" y2="84" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 1 -->
+      <rect x="270" y="84" width="320" height="56" rx="10" fill="#1e3a5f" filter="url(#sh)"/>
+      <text x="430" y="107" text-anchor="middle" fill="white" font-weight="700">FAZ 1 — Proje Kurulumu</text>
+      <text x="430" y="126" text-anchor="middle" fill="#93c5fd" font-size="10">Repo init · .env · DB bağlantısı · CORS · Klasör yapısı</text>
+
+      <line x1="430" y1="140" x2="430" y2="164" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 2 -->
+      <rect x="270" y="164" width="320" height="56" rx="10" fill="#065f46" filter="url(#sh)"/>
+      <text x="430" y="187" text-anchor="middle" fill="white" font-weight="700">FAZ 2 — Veritabanı Şeması</text>
+      <text x="430" y="206" text-anchor="middle" fill="#6ee7b7" font-size="10">UserAccount · Lead · SupportTicket · InteractionLog tabloları</text>
+
+      <line x1="430" y1="220" x2="430" y2="244" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 3 -->
+      <rect x="270" y="244" width="320" height="56" rx="10" fill="#4c1d95" filter="url(#sh)"/>
+      <text x="430" y="267" text-anchor="middle" fill="white" font-weight="700">FAZ 3 — Kimlik Doğrulama (Auth)</text>
+      <text x="430" y="286" text-anchor="middle" fill="#c4b5fd" font-size="10">Register · Login · JWT Middleware · RBAC Middleware</text>
+
+      <line x1="430" y1="300" x2="430" y2="324" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 4 -->
+      <rect x="270" y="324" width="320" height="56" rx="10" fill="#1a6070" filter="url(#sh)"/>
+      <text x="430" y="347" text-anchor="middle" fill="white" font-weight="700">FAZ 4 — Lead Yönetim API</text>
+      <text x="430" y="366" text-anchor="middle" fill="#a5f3fc" font-size="10">CRUD + Lead Scoring Algoritması (≤500ms) · Pipeline Stage</text>
+
+      <line x1="430" y1="380" x2="430" y2="404" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 5 -->
+      <rect x="270" y="404" width="320" height="56" rx="10" fill="#7a4020" filter="url(#sh)"/>
+      <text x="430" y="427" text-anchor="middle" fill="white" font-weight="700">FAZ 5 — Destek Bileti API</text>
+      <text x="430" y="446" text-anchor="middle" fill="#fed7aa" font-size="10">Bilet oluştur · Durum güncelle · Öncelik ata · Log API</text>
+
+      <line x1="430" y1="460" x2="430" y2="484" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 6 -->
+      <rect x="270" y="484" width="320" height="56" rx="10" fill="#1b6b45" filter="url(#sh)"/>
+      <text x="430" y="507" text-anchor="middle" fill="white" font-weight="700">FAZ 6 — React Frontend</text>
+      <text x="430" y="526" text-anchor="middle" fill="#a7f3d0" font-size="10">Login · Dashboard · Lead Sayfası · Ticket Sayfası</text>
+
+      <line x1="430" y1="540" x2="430" y2="564" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 7 -->
+      <rect x="270" y="564" width="320" height="56" rx="10" fill="#78350f" filter="url(#sh)"/>
+      <text x="430" y="587" text-anchor="middle" fill="white" font-weight="700">FAZ 7 — Test (BDD/TDD)</text>
+      <text x="430" y="606" text-anchor="middle" fill="#fde68a" font-size="10">Unit Tests · Functional Tests · Cucumber Acceptance Tests</text>
+
+      <line x1="430" y1="620" x2="430" y2="644" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 8 -->
+      <rect x="270" y="644" width="320" height="56" rx="10" fill="#374151" filter="url(#sh)"/>
+      <text x="430" y="667" text-anchor="middle" fill="white" font-weight="700">FAZ 8 — Cloud Deployment</text>
+      <text x="430" y="686" text-anchor="middle" fill="#d1d5db" font-size="10">Backend → Render · Frontend → Vercel · DB → Render PG</text>
+
+      <line x1="430" y1="700" x2="430" y2="724" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- Phase 9 -->
+      <rect x="270" y="724" width="320" height="56" rx="10" fill="#1e3a5f" filter="url(#sh)"/>
+      <text x="430" y="747" text-anchor="middle" fill="white" font-weight="700">FAZ 9 — Doküman & Teslim</text>
+      <text x="430" y="766" text-anchor="middle" fill="#93c5fd" font-size="10">architecture_description · implementation_summary · screenshots</text>
+
+      <line x1="430" y1="780" x2="430" y2="800" stroke="#374151" stroke-width="1.5" marker-end="url(#a2)"/>
+
+      <!-- END -->
+      <ellipse cx="430" cy="808" rx="90" ry="18" fill="#3bb77e"/>
+      <text x="430" y="813" text-anchor="middle" fill="white" font-weight="700" font-size="12">TAMAMLANDI ✓</text>
+
+      <!-- Side notes -->
+      <rect x="20" y="164" width="220" height="40" rx="7" fill="#fef9e7" stroke="#f0c040"/>
+      <text x="130" y="180" text-anchor="middle" font-size="9.5" fill="#78350f" font-weight="700">Kural: Her faz öncesi birim testleri yaz</text>
+      <text x="130" y="196" text-anchor="middle" font-size="9" fill="#78350f">(TDD — Red → Green → Refactor)</text>
+      <line x1="240" y1="184" x2="270" y2="192" stroke="#f0c040" stroke-width="1" stroke-dasharray="4"/>
+
+      <rect x="620" y="404" width="220" height="40" rx="7" fill="#fef2f2" stroke="#fca5a5"/>
+      <text x="730" y="420" text-anchor="middle" font-size="9.5" fill="#b91c1c" font-weight="700">Kural: Email unique kontrolü</text>
+      <text x="730" y="436" text-anchor="middle" font-size="9" fill="#b91c1c">zorunlu (Activity Diagram)</text>
+      <line x1="620" y1="424" x2="590" y2="432" stroke="#fca5a5" stroke-width="1" stroke-dasharray="4"/>
+
+      <rect x="620" y="244" width="220" height="40" rx="7" fill="#f0fdf4" stroke="#86efac"/>
+      <text x="730" y="260" text-anchor="middle" font-size="9.5" fill="#065f46" font-weight="700">Kural: JWT token 30 dk timeout</text>
+      <text x="730" y="276" text-anchor="middle" font-size="9" fill="#065f46">(NFR-ST-09 — Idle Session)</text>
+      <line x1="620" y1="264" x2="590" y2="272" stroke="#86efac" stroke-width="1" stroke-dasharray="4"/>
+    </svg>
+    <p style="text-align:center; font-size:0.78rem; color:#6b7280; margin-top:8px;">Şekil 2 — Geliştirme Süreci Akış Şeması (9 Faz)</p>
+  </div>
+</div>
+
+<!-- ─────── 6. LEAD KAYIT AKIŞ ŞEMASI ─────── -->
+<div id="flowchart-lead" class="section">
+  <div class="section-title"><span>§6</span> Lead Kayıt Akış Şeması (Activity Diagram'dan)</div>
+
+  <div class="alert alert-info" style="margin-bottom:16px;">
+    <span class="alert-icon">📌</span>
+    <div>Bu akış şeması, ödevde verilen <strong>Activity Diagram (§3.5)</strong> ve <strong>Sequence Diagram (§3.6)</strong> temel alınarak oluşturulmuştur. Geliştirici bu akışı birebir uygulamalıdır.</div>
+  </div>
+
+  <div class="chart-wrap">
+    <svg width="780" height="680" viewBox="0 0 780 680" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,system-ui,sans-serif" font-size="11">
+      <defs>
+        <marker id="a3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#374151"/>
+        </marker>
+        <filter id="sh2">
+          <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12"/>
+        </filter>
+      </defs>
+
+      <!-- Actors -->
+      <text x="90" y="20" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="700">Sales Rep (UI)</text>
+      <text x="300" y="20" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="700">React Frontend</text>
+      <text x="490" y="20" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="700">Node.js API</text>
+      <text x="670" y="20" text-anchor="middle" font-size="10" fill="#6b7280" font-weight="700">PostgreSQL DB</text>
+
+      <!-- Swim lane lines -->
+      <line x1="195" y1="10" x2="195" y2="670" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6,4"/>
+      <line x1="395" y1="10" x2="395" y2="670" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6,4"/>
+      <line x1="585" y1="10" x2="585" y2="670" stroke="#e5e7eb" stroke-width="1" stroke-dasharray="6,4"/>
+
+      <!-- START -->
+      <ellipse cx="90" cy="52" rx="60" ry="20" fill="#1e3a5f"/>
+      <text x="90" y="57" text-anchor="middle" fill="white" font-weight="700" font-size="10">BAŞLA</text>
+
+      <!-- Step 1 -->
+      <line x1="90" y1="72" x2="90" y2="96" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="25" y="96" width="130" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="90" y="114" text-anchor="middle" font-size="10" fill="#1e3a5f" font-weight="600">Lead Yönetim</text>
+      <text x="90" y="130" text-anchor="middle" font-size="10" fill="#1e3a5f">formunu açar</text>
+
+      <!-- Step 2 -->
+      <line x1="90" y1="140" x2="90" y2="164" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="25" y="164" width="130" height="44" rx="8" fill="#dbeafe" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="90" y="182" text-anchor="middle" font-size="10" fill="#1e3a5f" font-weight="600">İletişim bilgilerini</text>
+      <text x="90" y="198" text-anchor="middle" font-size="10" fill="#1e3a5f">& metrikleri girer</text>
+
+      <!-- Step 3 — Submit -->
+      <line x1="90" y1="208" x2="90" y2="232" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="235" y="232" width="130" height="44" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="300" y="250" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">Form verisi</text>
+      <text x="300" y="266" text-anchor="middle" font-size="10" fill="#065f46">POST /api/leads</text>
+      <!-- arrow from actor to frontend -->
+      <line x1="155" y1="254" x2="235" y2="254" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <text x="195" y="248" text-anchor="middle" font-size="9" fill="#6b7280">Submit</text>
+
+      <!-- Step 4 — API receives -->
+      <line x1="365" y1="254" x2="425" y2="254" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="425" y="232" width="130" height="44" rx="8" fill="#fef9c3" stroke="#fde047" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="490" y="250" text-anchor="middle" font-size="10" fill="#78350f" font-weight="600">API isteği alır</text>
+      <text x="490" y="266" text-anchor="middle" font-size="10" fill="#78350f">RBAC kontrol</text>
+
+      <!-- Step 5 — DB check -->
+      <line x1="490" y1="276" x2="490" y2="300" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="490" y1="300" x2="620" y2="300" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="620" y="278" width="130" height="44" rx="8" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="685" y="296" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="600">checkUniqueEmail</text>
+      <text x="685" y="312" text-anchor="middle" font-size="10" fill="#4c1d95">(email)</text>
+      <text x="555" y="294" text-anchor="middle" font-size="9" fill="#6b7280">SQL Query</text>
+
+      <!-- Decision diamond -->
+      <line x1="685" y1="322" x2="685" y2="360" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="685" y1="360" x2="490" y2="360" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <polygon points="490,340 530,360 490,380 450,360" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="490" y="356" text-anchor="middle" font-size="10" fill="white" font-weight="800">Email</text>
+      <text x="490" y="370" text-anchor="middle" font-size="10" fill="white" font-weight="800">Unique?</text>
+
+      <!-- NO branch — Error -->
+      <text x="408" y="370" text-anchor="middle" font-size="9.5" fill="#dc2626" font-weight="700">HAYIR</text>
+      <line x1="450" y1="360" x2="300" y2="360" stroke="#dc2626" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="170" y="338" width="130" height="44" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="235" y="355" text-anchor="middle" font-size="10" fill="#b91c1c" font-weight="600">400 Bad Request</text>
+      <text x="235" y="371" text-anchor="middle" font-size="10" fill="#b91c1c">Duplicate Email</text>
+
+      <!-- Error shown to user -->
+      <line x1="170" y1="360" x2="90" y2="360" stroke="#dc2626" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="25" y="338" width="65" height="44" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5"/>
+      <text x="57" y="355" text-anchor="middle" font-size="9.5" fill="#b91c1c" font-weight="600">Hata</text>
+      <text x="57" y="371" text-anchor="middle" font-size="9.5" fill="#b91c1c">göster</text>
+
+      <!-- NO end -->
+      <line x1="57" y1="382" x2="57" y2="420" stroke="#dc2626" stroke-width="1.5" marker-end="url(#a3)"/>
+      <ellipse cx="57" cy="432" rx="45" ry="18" fill="#dc2626"/>
+      <text x="57" y="437" text-anchor="middle" fill="white" font-size="9.5" font-weight="700">BİTİŞ (Hata)</text>
+
+      <!-- YES branch -->
+      <text x="490" y="400" text-anchor="middle" font-size="9.5" fill="#15803d" font-weight="700">EVET</text>
+      <line x1="490" y1="380" x2="490" y2="420" stroke="#15803d" stroke-width="1.5" marker-end="url(#a3)"/>
+
+      <!-- Scoring -->
+      <rect x="425" y="420" width="130" height="44" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="490" y="438" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">ScoringService</text>
+      <text x="490" y="454" text-anchor="middle" font-size="10" fill="#065f46">calculateScore() ≤500ms</text>
+
+      <!-- Save to DB -->
+      <line x1="490" y1="464" x2="490" y2="488" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="490" y1="488" x2="620" y2="488" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="620" y="466" width="130" height="44" rx="8" fill="#ede9fe" stroke="#a78bfa" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="685" y="484" text-anchor="middle" font-size="10" fill="#4c1d95" font-weight="600">saveLead()</text>
+      <text x="685" y="500" text-anchor="middle" font-size="10" fill="#4c1d95">201 Created</text>
+      <text x="555" y="482" text-anchor="middle" font-size="9" fill="#6b7280">INSERT SQL</text>
+
+      <!-- 201 back to frontend -->
+      <line x1="620" y1="490" x2="560" y2="490" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="490" y1="510" x2="490" y2="534" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="490" y1="534" x2="300" y2="534" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <rect x="170" y="512" width="130" height="44" rx="8" fill="#dcfce7" stroke="#86efac" stroke-width="1.5" filter="url(#sh2)"/>
+      <text x="235" y="530" text-anchor="middle" font-size="10" fill="#065f46" font-weight="600">Dashboard</text>
+      <text x="235" y="546" text-anchor="middle" font-size="10" fill="#065f46">yenile (Öncelik)</text>
+
+      <!-- Final end -->
+      <line x1="170" y1="534" x2="90" y2="534" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <line x1="90" y1="534" x2="90" y2="570" stroke="#374151" stroke-width="1.5" marker-end="url(#a3)"/>
+      <ellipse cx="90" cy="590" rx="70" ry="20" fill="#3bb77e"/>
+      <text x="90" y="595" text-anchor="middle" fill="white" font-weight="700" font-size="10">BİTİŞ (Başarılı) ✓</text>
+
+      <!-- Labels -->
+      <text x="555" y="310" text-anchor="middle" font-size="9" fill="#6b7280">DB Response</text>
+    </svg>
+    <p style="text-align:center; font-size:0.78rem; color:#6b7280; margin-top:8px;">Şekil 3 — Lead Kayıt Akış Şeması (Activity Diagram §3.5 + Sequence Diagram §3.6 kaynaklı)</p>
+  </div>
+</div>
+
+<!-- ─────── 7. API ENDPOINT TABLOSU ─────── -->
+<div id="api" class="section">
+  <div class="section-title"><span>§7</span> RESTful API Endpoint Tablosu</div>
+  <div class="alert alert-ok" style="margin-bottom:14px;">
+    <span class="alert-icon">✅</span>
+    <div>Tüm endpointler <code>/api</code> prefix'i ile başlar. JSON response döner. Korumalı endpointler <code>Authorization: Bearer &lt;token&gt;</code> header'ı gerektirir.</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>Auth Endpoints</h3>
+      <div class="endpoint"><span class="method POST">POST</span><span class="endpoint-path">/api/auth/register</span><span class="endpoint-desc">Kullanıcı kaydı</span></div>
+      <div class="endpoint"><span class="method POST">POST</span><span class="endpoint-path">/api/auth/login</span><span class="endpoint-desc">JWT token al</span></div>
+    </div>
+    <div class="card">
+      <h3>Lead Endpoints <span style="font-size:0.75rem; color:var(--muted);">🔒 JWT gerekli</span></h3>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/leads</span><span class="endpoint-desc">Öncelik sıralı liste (FR-SC-03)</span></div>
+      <div class="endpoint"><span class="method POST">POST</span><span class="endpoint-path">/api/leads</span><span class="endpoint-desc">Yeni lead + otomatik skor (FR-ST-01, UC2)</span></div>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/leads/:id</span><span class="endpoint-desc">Tekil lead detay</span></div>
+      <div class="endpoint"><span class="method PUT">PUT</span><span class="endpoint-path">/api/leads/:id</span><span class="endpoint-desc">Pipeline stage güncelle (UC3)</span></div>
+      <div class="endpoint"><span class="method DELETE">DELETE</span><span class="endpoint-path">/api/leads/:id</span><span class="endpoint-desc">Lead sil</span></div>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/leads/:id/logs</span><span class="endpoint-desc">Etkileşim geçmişi (FR-ST-04)</span></div>
+      <div class="endpoint"><span class="method POST">POST</span><span class="endpoint-path">/api/leads/:id/logs</span><span class="endpoint-desc">Not ekle (FR-ST-04)</span></div>
+    </div>
+    <div class="card">
+      <h3>Ticket Endpoints <span style="font-size:0.75rem; color:var(--muted);">🔒 JWT gerekli</span></h3>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/tickets</span><span class="endpoint-desc">Tüm biletler (FR-ST-09)</span></div>
+      <div class="endpoint"><span class="method POST">POST</span><span class="endpoint-path">/api/tickets</span><span class="endpoint-desc">Bilet oluştur (UC4)</span></div>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/tickets/:id</span><span class="endpoint-desc">Bilet detay</span></div>
+      <div class="endpoint"><span class="method PUT">PUT</span><span class="endpoint-path">/api/tickets/:id</span><span class="endpoint-desc">Durum + öncelik güncelle (UC5, FR-SC-10)</span></div>
+      <div class="endpoint"><span class="method DELETE">DELETE</span><span class="endpoint-path">/api/tickets/:id</span><span class="endpoint-desc">Bilet sil</span></div>
+    </div>
+    <div class="card">
+      <h3>Dashboard Endpoint <span style="font-size:0.75rem; color:var(--muted);">🔒 JWT gerekli</span></h3>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/dashboard</span><span class="endpoint-desc">Aktif lead sayısı + açık bilet sayısı + top-5 lead (UC6, FR-ST-06)</span></div>
+      <div class="endpoint"><span class="method GET">GET</span><span class="endpoint-path">/api/users</span><span class="endpoint-desc">Kullanıcı listesi — yalnızca admin (UC7)</span></div>
+      <div class="endpoint"><span class="method PUT">PUT</span><span class="endpoint-path">/api/users/:id/role</span><span class="endpoint-desc">RBAC rol atama — admin (UC7)</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 8. GELİŞTİRME FAZLARI ─────── -->
+<div id="phases" class="section">
+  <div class="section-title"><span>§8</span> Geliştirme Fazları & Görev Listesi</div>
+  <div class="phases">
+
+    <div class="phase">
+      <div class="phase-label">Faz 1 · Kurulum</div>
+      <h3>⚙️ Proje Kurulumu</h3>
+      <ul>
+        <li>Backend ve frontend için ayrı klasörler oluştur (<code>backend/</code>, <code>frontend/</code>)</li>
+        <li>Backend: <code>npm init</code>, Express kurulumu, <code>.env</code> dosyası (<code>DATABASE_URL</code>, <code>JWT_SECRET</code>, <code>PORT</code>)</li>
+        <li>Frontend: <code>npm create vite@latest</code>, React şablonu seç</li>
+        <li>PostgreSQL bağlantı havuzu (<code>pg.Pool</code>) kur, bağlantıyı test et</li>
+        <li>CORS middleware'i yalnızca Vercel frontend URL'ine izin verecek şekilde ayarla</li>
+        <li>Git repository başlat, <code>.gitignore</code>'a <code>.env</code> ekle</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 2 · Veritabanı</div>
+      <h3>🐘 Şema Oluşturma</h3>
+      <ul>
+        <li>Render üzerinde PostgreSQL servis oluştur, <code>DATABASE_URL</code>'yi kopyala</li>
+        <li>§4'teki SQL şemalarını çalıştır (UserAccount → Lead → SupportTicket → InteractionLog sırasıyla)</li>
+        <li>Her tabloda UNIQUE kısıtlamalarını doğrula (<code>user_email</code>, <code>email</code>)</li>
+        <li>CHECK constraint'lerini doğrula (<code>rbac_role</code>, <code>priority_level</code>, <code>status</code>)</li>
+        <li>Test verileri için seed script yaz (<code>db/seed.js</code>)</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 3 · Auth</div>
+      <h3>🔐 Kimlik Doğrulama & RBAC</h3>
+      <ul>
+        <li><code>POST /api/auth/register</code>: bcryptjs ile şifre hash'le (saltRounds=12 — NFR-ST-08)</li>
+        <li><code>POST /api/auth/login</code>: bcrypt.compare → JWT token üret (<code>expiresIn: '30m'</code> — NFR-ST-09)</li>
+        <li><code>authMiddleware.js</code>: Bearer token doğrulama, <code>req.user</code>'a ekle</li>
+        <li><code>rbacMiddleware.js</code>: <code>allowRoles('sales','admin')</code> gibi factory function</li>
+        <li>Unique email validation: 48 karakter sınırı uygula (class diagram)</li>
+        <li>Birim testleri: authService için Jest testleri yaz (TDD)</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 4 · Lead API</div>
+      <h3>📋 Lead Yönetim API</h3>
+      <ul>
+        <li><code>POST /api/leads</code>: email unique kontrolü → ScoringService.calculateScore() → DB kayıt</li>
+        <li><strong>Lead Scoring Algoritması</strong>: engagement metric değerlerine göre 0–100 arası dinamik skor üret; yanıt süresi &lt;500ms olmalı (NFR-SC-01)</li>
+        <li><code>GET /api/leads</code>: <code>ORDER BY priority_score DESC</code> ile sıralı liste (FR-SC-03)</li>
+        <li><code>PUT /api/leads/:id</code>: pipeline_stage güncelleme (UC3 — 'New'→'Contacted'→'Qualified'→'Closed')</li>
+        <li>InteractionLog CRUD: <code>GET/POST /api/leads/:id/logs</code> (FR-ST-04)</li>
+        <li>Birim testleri: scoringService.calculateScore() için Jest testleri yaz</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 5 · Ticket API</div>
+      <h3>🎫 Destek Bileti API</h3>
+      <ul>
+        <li><code>POST /api/tickets</code>: lead_id zorunlu, priority_level (Low/Medium/High — FR-SC-10)</li>
+        <li><code>PUT /api/tickets/:id</code>: status ve priority_level güncelleme (UC5)</li>
+        <li><code>GET /api/tickets</code>: tüm açık biletler — support ve admin rolü görebilir</li>
+        <li>Concurrent conflict detection: aynı bilet eş zamanlı güncellemede çakışma kontrolü (NFR-ST-05)</li>
+        <li>Birim testleri: ticketService için Jest testleri yaz</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 6 · Frontend</div>
+      <h3>⚛️ React Frontend</h3>
+      <ul>
+        <li><strong>LoginPage.jsx</strong>: form → POST /api/auth/login → JWT'yi <code>localStorage</code>'a kaydet → yönlendir</li>
+        <li><strong>DashboardPage.jsx</strong>: aktif lead sayısı, açık bilet sayısı, öncelik sıralı top-5 lead tablosu (UC6)</li>
+        <li><strong>LeadPage.jsx</strong>: Lead listesi + LeadForm (yeni kayıt) + pipeline stage dropdown + log geçmişi</li>
+        <li><strong>TicketPage.jsx</strong>: Bilet listesi + TicketForm + durum/öncelik güncelleme</li>
+        <li><code>api.js</code>: axios instance, baseURL = Render backend URL, Authorization header otomatik ekleme</li>
+        <li>AuthContext ile global kullanıcı durumu yönetimi, korumalı route'lar</li>
+        <li>Cross-platform: minimum 705px ekran genişliği desteklenmeli (NFR-ST-03)</li>
+        <li>Lead kayıt formu maksimum 3 ekran tıklaması ile tamamlanabilmeli (NFR-ST-01)</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 7 · Test</div>
+      <h3>🧪 BDD / TDD Test Katmanı</h3>
+      <ul>
+        <li><strong>Unit Tests (Jest)</strong>: scoringService, authService, ticketService için izole testler</li>
+        <li><strong>Functional/Integration Tests (Supertest)</strong>: API endpoint'lerinin doğru HTTP kodu döndürdüğünü test et</li>
+        <li><strong>Acceptance Tests (Cucumber)</strong>: <code>features/lead_registration.feature</code> BDD senaryoları</li>
+        <li>Test geçme kanıtları: terminal çıktısının ekran görüntüsünü al ve <code>test_results/</code> klasörüne kaydet</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 8 · Deployment</div>
+      <h3>☁️ Cloud Deployment</h3>
+      <ul>
+        <li><strong>Backend → Render</strong>: GitHub entegrasyonu, <code>DATABASE_URL</code> ve <code>JWT_SECRET</code> ortam değişkenlerini ekle</li>
+        <li><strong>Frontend → Vercel</strong>: GitHub entegrasyonu, <code>VITE_API_URL</code> ortam değişkenini Render URL'ine ayarla</li>
+        <li><strong>DB → Render PostgreSQL</strong>: Managed PostgreSQL servisi, SSL zorunlu (NFR-ST-07)</li>
+        <li>Deploy URL'lerini <code>deployment_info.txt</code> dosyasına yaz</li>
+        <li>Canlı sistem üzerinde uçtan uca akışı test et ve ekran görüntüsü al</li>
+      </ul>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Faz 9 · Teslim</div>
+      <h3>📦 Doküman & Paketleme</h3>
+      <ul>
+        <li><code>architecture_description.pdf</code>: Deployment diyagramı + Component diyagramı (en az 2 diyagram)</li>
+        <li><code>implementation_summary.pdf</code>: Neler uygulandı, neler eksik, tasarım kararları (1 sayfa)</li>
+        <li><code>user_stories.pdf</code>: §9'daki user story'leri formatla</li>
+        <li><code>acceptance_tests.pdf</code>: §10'daki BDD kriterlerini formatla</li>
+        <li>Zip dosyasını oluştur: <code>FirstSaaSPrototype/</code> klasör yapısını kontrol et</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─────── 9. USER STORIES ─────── -->
+<div id="userstories" class="section">
+  <div class="section-title"><span>§9</span> User Stories (Gereksinimlerden Türetilmiş)</div>
+  <table>
+    <tr><th>ID</th><th>Rol</th><th>User Story</th><th>Gereksinim</th><th>Öncelik</th></tr>
+    <tr>
+      <td>US-01</td><td>Sales Rep</td>
+      <td>Yeni bir lead kaydedebilmek istiyorum ki müşteri adayı iletişim bilgilerini sisteme girebiliyeyim.</td>
+      <td>FR-ST-01, UC1</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-02</td><td>Sales Rep</td>
+      <td>Lead kaydedildiğinde otomatik öncelik skoru görmek istiyorum ki hangi lead'e önce odaklanacağımı bileyim.</td>
+      <td>FR-UC-02, UC2</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-03</td><td>Sales Rep</td>
+      <td>Lead'lerin öncelik sırasına göre listelendiği dashboard'u görmek istiyorum ki en değerli müşteri adaylarını hızla belirleyebileyim.</td>
+      <td>FR-SC-03, UC6</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-04</td><td>Sales Rep</td>
+      <td>Lead'in satış pipeline aşamasını güncelleyebilmek istiyorum ki satış sürecinin nerede olduğunu takip edebileyim.</td>
+      <td>FR-SC-05, UC3</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-05</td><td>Support Staff</td>
+      <td>Bir lead'e bağlı destek bileti oluşturabilmek istiyorum ki müşteri sorularını sistematik kayıt altına alabileyim.</td>
+      <td>FR-ST-07, UC4</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-06</td><td>Support Staff</td>
+      <td>Bir biletin durumunu ve öncelik seviyesini güncelleyebilmek istiyorum ki biletlerin çözüm sürecini yönetebiliyeyim.</td>
+      <td>FR-UC-08, FR-SC-10, UC5</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+    <tr>
+      <td>US-07</td><td>Admin</td>
+      <td>Kullanıcılara RBAC rolü atayabilmek istiyorum ki sisteme erişim yetkilerini kontrol edebileyim.</td>
+      <td>NFR-ST-02, UC7</td><td><span class="tag tag-s">S</span></td>
+    </tr>
+    <tr>
+      <td>US-08</td><td>Tüm roller</td>
+      <td>Sisteme güvenli şekilde giriş yapabilmek istiyorum ki yalnızca yetkili kullanıcılar verilere erişebilin.</td>
+      <td>NFR-ST-08, NFR-ST-09</td><td><span class="tag tag-m">M</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ─────── 10. BDD ─────── -->
+<div id="bdd" class="section">
+  <div class="section-title"><span>§10</span> BDD Acceptance Criteria (Given / When / Then)</div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>US-01 & US-02 — Lead Kaydı & Otomatik Skor</h3>
+    <div class="bdd">
+      <span class="feat">Feature: Lead Registration with Automatic Scoring</span>
+
+&nbsp;
+      <span class="scen">Scenario: Successful new lead registration (Scenario 1 — Activity Diagram)</span>
+      &nbsp;<span class="given">Given</span> Sales Rep giriş yapmış ve Lead formu açık
+      &nbsp;<span class="when">When</span>  "contact_name: Ali Veli, email: ali@example.com, metrics: {calls:3}" gönderir
+      &nbsp;<span class="then">Then</span>  sistem emailin benzersiz olduğunu doğrular
+      &nbsp;<span class="then">And</span>   ScoringService 500ms içinde priority_score hesaplar
+      &nbsp;<span class="then">And</span>   DB'ye lead kaydedilir, 201 Created döner
+      &nbsp;<span class="then">And</span>   dashboard öncelik listesi yenilenir
+
+&nbsp;
+      <span class="scen">Scenario: Duplicate email rejection (Scenario 3 — Activity Diagram)</span>
+      &nbsp;<span class="given">Given</span> "ali@example.com" sistemde zaten mevcut
+      &nbsp;<span class="when">When</span>  aynı email ile yeni lead kaydı gönderilir
+      &nbsp;<span class="then">Then</span>  API 400 Bad Request döner
+      &nbsp;<span class="then">And</span>   "Duplicate Email" hata mesajı görüntülenir
+      &nbsp;<span class="then">And</span>   DB'ye herhangi bir kayıt eklenmez
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px;">
+    <h3>US-05 — Destek Bileti Oluşturma</h3>
+    <div class="bdd">
+      <span class="feat">Feature: Support Ticket Generation</span>
+
+&nbsp;
+      <span class="scen">Scenario: Create a support ticket linked to a lead</span>
+      &nbsp;<span class="given">Given</span> Support Staff giriş yapmış
+      &nbsp;<span class="given">And</span>   lead_id=5 sistemde mevcut
+      &nbsp;<span class="when">When</span>  "description, priority_level: High, lead_id: 5" ile POST /api/tickets çağırır
+      &nbsp;<span class="then">Then</span>  bilet status "Open" ile oluşturulur
+      &nbsp;<span class="then">And</span>   201 Created döner
+      &nbsp;<span class="then">And</span>   bilet listesinde görünür
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>US-08 — Güvenli Giriş & Session Timeout</h3>
+    <div class="bdd">
+      <span class="feat">Feature: Authentication & Session Management</span>
+
+&nbsp;
+      <span class="scen">Scenario: Successful login</span>
+      &nbsp;<span class="given">Given</span> kayıtlı kullanıcı "egemen@crm.com" ve doğru şifre
+      &nbsp;<span class="when">When</span>  POST /api/auth/login çağırır
+      &nbsp;<span class="then">Then</span>  JWT token döner, 200 OK
+      &nbsp;<span class="then">And</span>   token 30 dakika süre ile geçerlidir (NFR-ST-09)
+
+&nbsp;
+      <span class="scen">Scenario: Idle session timeout</span>
+      &nbsp;<span class="given">Given</span> kullanıcı 30 dakika hiçbir işlem yapmamış
+      &nbsp;<span class="when">When</span>  korumalı bir endpoint'e istek gönderir
+      &nbsp;<span class="then">Then</span>  API 401 Unauthorized döner
+      &nbsp;<span class="then">And</span>   kullanıcı login sayfasına yönlendirilir
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 11. TEST ─────── -->
+<div id="testing" class="section">
+  <div class="section-title"><span>§11</span> Test Stratejisi</div>
+
+  <div class="grid-3">
+    <div class="card">
+      <h3>🔬 Unit Tests (Jest)</h3>
+      <ul style="padding-left:16px; font-size:0.85rem; margin-top:8px;">
+        <li><code>scoringService.test.js</code> — calculateScore() doğru skor üretiyor mu?</li>
+        <li><code>authService.test.js</code> — hash & compare doğru mu?</li>
+        <li><code>ticketService.test.js</code> — priority_level validation</li>
+        <li>Her servis: en az 3 test case</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🔧 Functional Tests (Supertest)</h3>
+      <ul style="padding-left:16px; font-size:0.85rem; margin-top:8px;">
+        <li>POST /api/leads → 201 (başarılı)</li>
+        <li>POST /api/leads → 400 (duplicate email)</li>
+        <li>GET /api/leads → 200 + sıralı liste</li>
+        <li>PUT /api/tickets/:id → 200</li>
+        <li>Yetkisiz istek → 401</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>🥒 Acceptance Tests (Cucumber)</h3>
+      <ul style="padding-left:16px; font-size:0.85rem; margin-top:8px;">
+        <li><code>lead_registration.feature</code></li>
+        <li><code>duplicate_email.feature</code></li>
+        <li><code>ticket_creation.feature</code></li>
+        <li><code>auth_login.feature</code></li>
+        <li>Step definitions: <code>features/steps/</code></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="alert alert-warn" style="margin-top:14px;">
+    <span class="alert-icon">⚠️</span>
+    <div><strong>Ödev Zorunluluğu:</strong> Tüm testlerin geçtiğini gösteren kanıt (terminal ekran görüntüsü veya CI log) <code>test_results/</code> klasörüne eklenmeli ve <code>acceptance_tests.pdf</code>'e dahil edilmelidir.</div>
+  </div>
+</div>
+
+<!-- ─────── 12. GELİŞTİRİCİ KURALLARI ─────── -->
+<div id="rules" class="section">
+  <div class="section-title"><span>§12</span> Geliştirici Kuralları <span class="pill red">KESİN — İSTİSNA YOK</span></div>
+
+  <div class="alert alert-danger" style="margin-bottom:18px;">
+    <span class="alert-icon">🚨</span>
+    <div>Aşağıdaki kurallar ödevin gereksinimlerinden (<strong>constraint.txt, HW5read.pdf, diyagramlar</strong>) doğrudan türetilmiştir. Her kural bir gereksenim veya kısıt ile izlenebilir (traceable) bağlantılıdır.</div>
+  </div>
+
+  <!-- GENEL MİMARİ -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">🏗 Mimari Kurallar</p>
+
+  <div class="rule">
+    <div class="rule-num danger">R1</div>
+    <div class="rule-body">
+      <h4>3-Tier mimariye kesinlikle uy — Katmanlar arası doğrudan erişim yasak</h4>
+      <p>Frontend yalnızca API'ye konuşur. Controller doğrudan DB'ye erişemez — Repository katmanından geçmek zorunludur. İzlenebilirlik: HW5 §Architectural Requirements, madde 2.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num danger">R2</div>
+    <div class="rule-body">
+      <h4>MVC / Layered ayrımı zorunlu: Controller → Service → Repository</h4>
+      <p>Business logic kesinlikle Controller içine yazılmaz. Scoring algoritması Service katmanına aittir. İzlenebilirlik: HW5 §Architectural Requirements, madde 3.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num danger">R3</div>
+    <div class="rule-body">
+      <h4>RESTful API: Doğru HTTP metodunu kullan, JSON döndür</h4>
+      <p>GET okuma, POST oluşturma, PUT güncelleme, DELETE silme içindir. Tüm response body JSON formatında olmalı. İzlenebilirlik: HW5 §RESTful API Design, madde 4.</p>
+    </div>
+  </div>
+
+  <!-- GÜVENLİK -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">🔐 Güvenlik Kuralları</p>
+
+  <div class="rule">
+    <div class="rule-num warn">R4</div>
+    <div class="rule-body">
+      <h4>Şifreler kesinlikle düz metin saklanamaz — bcryptjs zorunlu (saltRounds ≥ 12)</h4>
+      <p>İzlenebilirlik: NFR-ST-08 — "100% bcrypt hashing, validation rules on unique 48-character max email inputs".</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num warn">R5</div>
+    <div class="rule-body">
+      <h4>JWT token süresi 30 dakika — idle session timeout uygulanmalı</h4>
+      <p>İzlenebilirlik: NFR-ST-09 — "automatically logging out users after 30 minutes of idle time".</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num warn">R6</div>
+    <div class="rule-body">
+      <h4>RBAC middleware her korumalı endpoint'te aktif olmalı</h4>
+      <p>Örnek: Admin-only endpoint'lere support/sales rolü erişemez. İzlenebilirlik: NFR-ST-02 — "Role-Based Access Control (RBAC) to maintain secure data access".</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num warn">R7</div>
+    <div class="rule-body">
+      <h4>DB bağlantısı SSL ile şifrelenmiş olmalı (Render PostgreSQL)</h4>
+      <p>İzlenebilirlik: NFR-ST-07 — "GDPR/KVKK Data Masking" ve NFR-ST-01 (veri koruma). <code>pg.Pool</code> konfigürasyonunda <code>ssl: { rejectUnauthorized: false }</code> ekle.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num warn">R8</div>
+    <div class="rule-body">
+      <h4>JWT_SECRET ve DATABASE_URL kesinlikle kaynak koduna yazılmaz</h4>
+      <p>Yalnızca <code>.env</code> (local) ve platform ortam değişkenleri (Render/Vercel) kullanılır. <code>.env</code> Git'e push edilmez.</p>
+    </div>
+  </div>
+
+  <!-- VERİ KURALLARI -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">📋 Veri & İş Mantığı Kuralları</p>
+
+  <div class="rule">
+    <div class="rule-num green">R9</div>
+    <div class="rule-body">
+      <h4>Lead email UNIQUE olmalı — kayıt öncesi kontrol zorunlu</h4>
+      <p>Activity Diagram (§3.5) ve Sequence Diagram (§3.6) bu kontrolü açıkça tanımlar. Duplicate durumunda 400 Bad Request döndür.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num green">R10</div>
+    <div class="rule-body">
+      <h4>Lead Scoring Algoritması 500ms'den uzun süremez</h4>
+      <p>İzlenebilirlik: NFR-SC-01 (Performance — "Algorithmic Scoring Speed: 500ms"). Hesaplama asenkron, ağır I/O içermemeli.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num green">R11</div>
+    <div class="rule-body">
+      <h4>Pipeline stage değerleri sabit enum'dan gelir</h4>
+      <p>Geçerli değerler: <code>'New' | 'Contacted' | 'Qualified' | 'Closed'</code>. Backend validation ile kontrol edilmeli. İzlenebilirlik: FR-SC-05.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num green">R12</div>
+    <div class="rule-body">
+      <h4>Bilet priority_level: Low / Medium / High — başka değer kabul edilmez</h4>
+      <p>İzlenebilirlik: FR-SC-10 — "Ticket Priority Tagging". DB CHECK constraint + backend validation çift katman olmalı.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num green">R13</div>
+    <div class="rule-body">
+      <h4>UserAccount.user_email maksimum 48 karakter</h4>
+      <p>İzlenebilirlik: Class Diagram §3.4 — <code>userEmail: String[48]</code>. Backend validation + DB VARCHAR(48) ile uygulanmalı.</p>
+    </div>
+  </div>
+
+  <!-- FRONTEND KURALLARI -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">⚛️ Frontend Kuralları</p>
+
+  <div class="rule">
+    <div class="rule-num">R14</div>
+    <div class="rule-body">
+      <h4>Lead kayıt formu en fazla 3 ekran tıklamasıyla tamamlanabilmeli</h4>
+      <p>İzlenebilirlik: NFR-ST-01 — "Rapid Lead Entry Workflow: complete a new lead entry pipeline requiring no more than 3 screen clicks".</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num">R15</div>
+    <div class="rule-body">
+      <h4>Destek arama/arayüz 5 saniyede yanıt vermeli</h4>
+      <p>İzlenebilirlik: NFR-ST-03 — "enable support staff to locate and open any active customer ticket within 5 seconds using search function".</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num">R16</div>
+    <div class="rule-body">
+      <h4>Uygulama masaüstü ve mobil web tarayıcısında çalışmalı (minimum 705px)</h4>
+      <p>İzlenebilirlik: NFR-ST-02 — "100% compatible with modern desktop and mobile web browsers with a minimum viewport width of 705px".</p>
+    </div>
+  </div>
+
+  <!-- TEST KURALLARI -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">🧪 Test Kuralları</p>
+
+  <div class="rule">
+    <div class="rule-num danger">R17</div>
+    <div class="rule-body">
+      <h4>TDD zorunlu: Önce test yaz, sonra kodu uygula (Red → Green → Refactor)</h4>
+      <p>İzlenebilirlik: HW5 §Development Paradigm — "BDD / TDD Approach". Her servis metodu için önce test case yazılır.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num danger">R18</div>
+    <div class="rule-body">
+      <h4>Cucumber acceptance testleri: Given/When/Then formatı zorunlu</h4>
+      <p>İzlenebilirlik: HW5 §Development Paradigm — "Acceptance criteria (Given / When / Then)". Her user story için en az bir .feature senaryosu bulunmalı.</p>
+    </div>
+  </div>
+
+  <!-- TESLIM KURALLARI -->
+  <p style="font-weight:700; font-size:0.95rem; margin:18px 0 10px; color:var(--primary);">📦 Teslim Kuralları</p>
+
+  <div class="rule">
+    <div class="rule-num warn">R19</div>
+    <div class="rule-body">
+      <h4>En az 2 UML diyagramı raporda okunabilir şekilde yer almalı</h4>
+      <p>İzlenebilirlik: HW5 §Required Outputs, madde 1. 1) UML Deployment Diagram + 2) UML Component/Layered Architecture Diagram. Çok büyükse 2-3 parçaya böl.</p>
+    </div>
+  </div>
+
+  <div class="rule">
+    <div class="rule-num warn">R20</div>
+    <div class="rule-body">
+      <h4>Zip içindeki klasör yapısı birebir uyulmalı</h4>
+      <p>İzlenebilirlik: HW5 §Submission Format. <code>FirstSaaSPrototype/source_code/ · test_code/ · architecture_description.pdf · implementation_summary.pdf · user_stories.pdf · acceptance_tests.pdf · test_results/ · screenshots/ · deployment_info.txt</code></p>
+    </div>
+  </div>
+</div>
+
+<!-- ─────── 13. DEPLOYMENT ─────── -->
+<div id="deploy" class="section">
+  <div class="section-title"><span>§13</span> Deployment Rehberi</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>☁️ Render — Backend + PostgreSQL</h3>
+      <ol style="padding-left:18px; font-size:0.875rem; margin-top:8px; line-height:1.9;">
+        <li>render.com → "New Web Service" → GitHub repo bağla</li>
+        <li>Branch: <code>main</code>, Root Directory: <code>backend/</code></li>
+        <li>Build Command: <code>npm install</code></li>
+        <li>Start Command: <code>node server.js</code></li>
+        <li>Environment Variables: <code>DATABASE_URL</code>, <code>JWT_SECRET</code>, <code>NODE_ENV=production</code></li>
+        <li>"New PostgreSQL" servisi oluştur, External DB URL'i kopyala</li>
+        <li>SQL şemalarını Render PostgreSQL shell üzerinden çalıştır</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>▲ Vercel — Frontend</h3>
+      <ol style="padding-left:18px; font-size:0.875rem; margin-top:8px; line-height:1.9;">
+        <li>vercel.com → "New Project" → GitHub repo bağla</li>
+        <li>Root Directory: <code>frontend/</code>, Framework: Vite</li>
+        <li>Build Command: <code>npm run build</code>, Output: <code>dist</code></li>
+        <li>Environment Variables: <code>VITE_API_URL=https://&lt;render-url&gt;.onrender.com</code></li>
+        <li>Deploy et, URL'i not al</li>
+        <li>Render backend'e Vercel URL'ini CORS allowed origin olarak ekle</li>
+        <li>Deploy URL'ini <code>deployment_info.txt</code>'e yaz</li>
+      </ol>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px;">
+    <h3>📄 deployment_info.txt Şablonu</h3>
+    <pre><span class="cm"># CRM SaaS Prototype — Deployment Info</span>
+
+Frontend URL  : https://crm-prototype.vercel.app
+Backend URL   : https://crm-backend.onrender.com
+DB Platform   : Render Managed PostgreSQL
+
+Tech Stack:
+  Backend  : Node.js v20 + Express.js
+  Frontend : React v18 + Vite v5
+  Database : PostgreSQL 16
+  Auth     : JWT (jsonwebtoken) + bcryptjs
+
+Deployment Date: [TARİH]
+Team Leader    : [AD SOYAD]</pre>
+  </div>
+</div>
+
+<!-- ─────── 14. KONTROL LİSTESİ ─────── -->
+<div id="checklist" class="section">
+  <div class="section-title"><span>§14</span> Teslim Kontrol Listesi</div>
+
+  <div class="grid-2">
+    <div class="card">
+      <h3>📁 Dosya Yapısı</h3>
+      <ul class="checklist">
+        <li><span class="chk"></span><code>source_code/</code> — backend + frontend kaynak kodu</li>
+        <li><span class="chk"></span><code>test_code/</code> — tüm test dosyaları</li>
+        <li><span class="chk"></span><code>architecture_description.pdf</code> — 2+ diyagram</li>
+        <li><span class="chk"></span><code>implementation_summary.pdf</code> — 1 sayfa</li>
+        <li><span class="chk"></span><code>user_stories.pdf</code> — US-01..US-08</li>
+        <li><span class="chk"></span><code>acceptance_tests.pdf</code> — BDD Given/When/Then</li>
+        <li><span class="chk"></span><code>test_results/</code> — test geçme ekran görüntüleri</li>
+        <li><span class="chk"></span><code>screenshots/</code> — canlı uygulama görüntüleri</li>
+        <li><span class="chk"></span><code>deployment_info.txt</code> — URL'ler + tech stack</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>✅ Teknik Gereksinimler</h3>
+      <ul class="checklist">
+        <li><span class="chk"></span>Home (Login) sayfası çalışıyor</li>
+        <li><span class="chk"></span>Lead Yönetim sayfası çalışıyor (UC1, UC2, UC3)</li>
+        <li><span class="chk"></span>Destek Bileti sayfası çalışıyor (UC4, UC5)</li>
+        <li><span class="chk"></span>Dashboard sayfası çalışıyor (UC6)</li>
+        <li><span class="chk"></span>Uçtan uca akış: UI → API → DB → Response</li>
+        <li><span class="chk"></span>JWT auth + RBAC aktif</li>
+        <li><span class="chk"></span>Lead scoring &lt;500ms</li>
+        <li><span class="chk"></span>Duplicate email 400 döndürüyor</li>
+        <li><span class="chk"></span>Unit testler geçiyor</li>
+        <li><span class="chk"></span>Acceptance testler geçiyor (Cucumber)</li>
+        <li><span class="chk"></span>Frontend Vercel'de canlı</li>
+        <li><span class="chk"></span>Backend Render'da canlı</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<hr>
+<div style="text-align:center; font-size:0.8rem; color:var(--muted); padding: 12px 0;">
+  <strong>Web-Based Operational CRM — HW5 Part 2 Proje Planı</strong> &nbsp;|&nbsp;
+  İstanbul Arel Üniversitesi, Bilgisayar Mühendisliği &nbsp;|&nbsp; Son Teslim: 6 Mayıs 2026
+</div>
+
+</div><!-- /container -->
+</body>
+</html>
