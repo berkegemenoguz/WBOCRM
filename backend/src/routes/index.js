@@ -4,6 +4,7 @@ const { allowRoles }    = require('../middleware/rbacMiddleware');
 const authController    = require('../controllers/authController');
 const leadController    = require('../controllers/leadController');
 const logController     = require('../controllers/logController');
+const ticketController  = require('../controllers/ticketController');
 
 const router = Router();
 
@@ -21,5 +22,12 @@ router.delete('/leads/:id',  authMiddleware, allowRoles('sales', 'admin'), leadC
 // Interaction logs
 router.get('/leads/:id/logs',  authMiddleware, logController.getByLead);
 router.post('/leads/:id/logs', authMiddleware, logController.create);
+
+// Tickets (support + admin)
+router.get('/tickets',        authMiddleware, allowRoles('support', 'admin'), ticketController.getAll);
+router.post('/tickets',       authMiddleware, allowRoles('support', 'admin'), ticketController.create);
+router.get('/tickets/:id',    authMiddleware, allowRoles('support', 'admin'), ticketController.getById);
+router.put('/tickets/:id',    authMiddleware, allowRoles('support', 'admin'), ticketController.update);
+router.delete('/tickets/:id', authMiddleware, allowRoles('support', 'admin'), ticketController.remove);
 
 module.exports = router;

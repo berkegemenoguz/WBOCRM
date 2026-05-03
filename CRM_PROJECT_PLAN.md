@@ -125,7 +125,7 @@ Rules:
 | Phase 2 | Database Schema | ✅ |
 | Phase 3 | Authentication & RBAC | ✅ |
 | Phase 4 | Lead Management API | ✅ |
-| Phase 5 | Support Ticket API | ⬜ |
+| Phase 5 | Support Ticket API | ✅ |
 | Phase 6 | React Frontend | ⬜ |
 | Phase 7 | Tests (BDD/TDD) | ⬜ |
 | Phase 8 | Cloud Deployment | ⬜ |
@@ -587,11 +587,11 @@ All errors return JSON:
 
 ### Phase 5 — Support Ticket API
 
-- [ ] `POST /api/tickets`: lead_id required, priority_level (Low/Medium/High — FR-SC-10)
-- [ ] `PUT /api/tickets/:id`: update status and priority_level (UC5)
-- [ ] `GET /api/tickets`: accessible by support and admin roles
-- [ ] Concurrent conflict detection: check for concurrent update collisions (NFR-ST-05)
-- [ ] **TDD**: Write Jest tests for ticketService
+- [x] `POST /api/tickets`: lead_id required, priority_level (Low/Medium/High — FR-SC-10)
+- [x] `PUT /api/tickets/:id`: update status and priority_level (UC5)
+- [x] `GET /api/tickets`: accessible by support and admin roles
+- [x] Concurrent conflict detection: check for concurrent update collisions (NFR-ST-05)
+- [x] **TDD**: Write Jest tests for ticketService
 
 ### Phase 6 — React Frontend
 
