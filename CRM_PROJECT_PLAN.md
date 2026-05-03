@@ -552,29 +552,29 @@ All errors return JSON:
 
 ### Phase 1 — Project Scaffold
 
-- [ ] Create `backend/` and `frontend/` directories
-- [ ] Backend: `npm init`, Express setup, `.env` file (`DATABASE_URL`, `JWT_SECRET`, `PORT`)
-- [ ] Frontend: `npm create vite@latest`, select React template
-- [ ] Set up PostgreSQL connection pool (`pg.Pool`), test connection
-- [ ] Configure CORS middleware to allow only Vercel frontend URL
-- [ ] Initialize Git repository, add `.env` to `.gitignore`
+- [x] Create `backend/` and `frontend/` directories
+- [x] Backend: `npm init`, Express setup, `.env` file (`DATABASE_URL`, `JWT_SECRET`, `PORT`)
+- [x] Frontend: `npm create vite@latest`, select React template
+- [x] Set up PostgreSQL connection pool (`pg.Pool`), test connection
+- [x] Configure CORS middleware to allow only Vercel frontend URL
+- [x] Initialize Git repository, add `.env` to `.gitignore`
 
 ### Phase 2 — Database Schema
 
-- [ ] Create PostgreSQL service on Render, copy `DATABASE_URL`
-- [ ] Run SQL schemas from Section 7 in order: UserAccount → Lead → SupportTicket → InteractionLog
-- [ ] Verify UNIQUE constraints (`user_email`, `email`)
-- [ ] Verify CHECK constraints (`rbac_role`, `priority_level`, `status`, `pipeline_stage`)
-- [ ] Write seed script (`db/seed.js`) with test data
+- [x] Create PostgreSQL service on Render, copy `DATABASE_URL`
+- [x] Run SQL schemas from Section 7 in order: UserAccount → Lead → SupportTicket → InteractionLog
+- [x] Verify UNIQUE constraints (`user_email`, `email`)
+- [x] Verify CHECK constraints (`rbac_role`, `priority_level`, `status`, `pipeline_stage`)
+- [x] Write seed script (`db/seed.js`) with test data
 
 ### Phase 3 — Authentication & RBAC
 
-- [ ] `POST /api/auth/register`: hash password with bcryptjs (`saltRounds=12` — NFR-ST-08)
-- [ ] `POST /api/auth/login`: bcrypt.compare → generate JWT token (`expiresIn: '30m'` — NFR-ST-09)
-- [ ] `authMiddleware.js`: Bearer token verification, attach decoded user to `req.user`
-- [ ] `rbacMiddleware.js`: `allowRoles('sales', 'admin')` factory function
-- [ ] Validate email max 48 characters (class diagram: `String[48]`)
-- [ ] **TDD**: Write Jest tests for authService before implementing
+- [x] `POST /api/auth/register`: hash password with bcryptjs (`saltRounds=12` — NFR-ST-08)
+- [x] `POST /api/auth/login`: bcrypt.compare → generate JWT token (`expiresIn: '30m'` — NFR-ST-09)
+- [x] `authMiddleware.js`: Bearer token verification, attach decoded user to `req.user`
+- [x] `rbacMiddleware.js`: `allowRoles('sales', 'admin')` factory function
+- [x] Validate email max 48 characters (class diagram: `String[48]`)
+- [x] **TDD**: Write Jest tests for authService before implementing
 
 ### Phase 4 — Lead Management API
 
