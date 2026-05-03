@@ -10,23 +10,25 @@ export default function NavBar() {
     navigate('/login');
   }
 
+  const role = user?.rbac_role;
+
   return (
     <nav style={styles.nav}>
       <span style={styles.brand}>WBO CRM</span>
       <div style={styles.links}>
         <Link to="/dashboard" style={styles.link}>Dashboard</Link>
-        {(user?.role === 'sales' || user?.role === 'admin') && (
+        {(role === 'sales' || role === 'admin') && (
           <Link to="/leads" style={styles.link}>Leads</Link>
         )}
-        {(user?.role === 'support' || user?.role === 'admin') && (
+        {(role === 'support' || role === 'admin') && (
           <Link to="/tickets" style={styles.link}>Tickets</Link>
         )}
-        {user?.role === 'admin' && (
+        {role === 'admin' && (
           <Link to="/users" style={styles.link}>Users</Link>
         )}
       </div>
       <div style={styles.right}>
-        <span style={styles.roleTag}>{user?.role}</span>
+        <span style={styles.roleTag}>{role}</span>
         <button onClick={handleLogout} style={styles.btn}>Logout</button>
       </div>
     </nav>

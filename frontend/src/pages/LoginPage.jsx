@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate  = useNavigate();
-  const [form, setForm]   = useState({ email: '', password: '' });
+  const [form, setForm]   = useState({ user_email: '', user_password: '' });
   const [error, setError] = useState('');
 
   function handle(e) {
@@ -32,9 +32,9 @@ export default function LoginPage() {
         <p style={styles.sub}>Sign in to your account</p>
         {error && <p style={styles.error}>{error}</p>}
         <form onSubmit={submit} style={styles.form}>
-          <input name="email" type="email" placeholder="Email" value={form.email}
+          <input name="user_email" type="email" placeholder="Email" value={form.user_email}
             onChange={handle} required style={styles.input} />
-          <input name="password" type="password" placeholder="Password" value={form.password}
+          <input name="user_password" type="password" placeholder="Password" value={form.user_password}
             onChange={handle} required style={styles.input} />
           <button type="submit" style={styles.btn}>Sign In</button>
         </form>

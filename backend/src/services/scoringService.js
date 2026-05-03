@@ -1,4 +1,4 @@
-const SIZE_SCORES = { small: 5, medium: 10, large: 15, enterprise: 20 };
+const SIZE_SCORES = { small: 5, medium: 10, enterprise: 20 };
 
 // Returns 0-100 priority score based on engagement metrics
 function calculateScore(metrics = {}) {

@@ -22,7 +22,7 @@ function ProtectedLayout({ children }) {
 
 function RoleRoute({ roles, children }) {
   const { user } = useAuth();
-  if (!roles.includes(user?.role)) return <Navigate to="/dashboard" replace />;
+  if (!roles.includes(user?.rbac_role)) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
