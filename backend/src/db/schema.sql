@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS UserAccount (
   full_name     VARCHAR(100) NOT NULL
 );
 
--- Lead (FR-ST-01, FR-UC-02)
+-- Lead (FR-ST-01, FR-UC-02, FR-SC-13, FR-ST-14)
 CREATE TABLE IF NOT EXISTS Lead (
   lead_id        SERIAL PRIMARY KEY,
   email          VARCHAR(100) UNIQUE NOT NULL,
@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS Lead (
   priority_score DECIMAL(5,2) DEFAULT 0.0,
   pipeline_stage VARCHAR(50)  DEFAULT 'New'
                  CHECK (pipeline_stage IN ('New', 'Contacted', 'Qualified', 'Closed')),
+  deal_value     DECIMAL(10,2) DEFAULT 0.0,   -- FR-ST-14: monthly revenue tracking
+  campaign_id    VARCHAR(100),                -- FR-SC-13: marketing campaign linking
   user_id        INTEGER REFERENCES UserAccount(user_id),
   created_at     TIMESTAMP DEFAULT NOW()
 );

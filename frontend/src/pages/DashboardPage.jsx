@@ -1,15 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import api from '../services/api';
 import PriorityTable from '../components/PriorityTable';
+
+const REFRESH_INTERVAL_MS = 2000;
 
 export default function DashboardPage() {
   const [data, setData]   = useState(null);
   const [error, setError] = useState('');
+  const timerRef = useRef(null);
+
+  async function fetchDashboard() {
+    try {
+      const { data: d } = await api.get('/dashboard');
+      setData(d);
+    } catch {
+      setError('Failed to load dashboard');
+    }
+  }
 
   useEffect(() => {
-    api.get('/dashboard')
-      .then(r => setData(r.data))
-      .catch(() => setError('Failed to load dashboard'));
+    fetchDashboard();
+    timerRef.current = setInterval(fetchDashboard, REFRESH_INTERVAL_MS);
+    return () => clearInterval(timerRef.current);
   }, []);
 
   if (error) return <p style={styles.error}>{error}</p>;
@@ -19,8 +31,9 @@ export default function DashboardPage() {
     <div style={styles.page}>
       <h2 style={styles.heading}>Dashboard</h2>
       <div style={styles.stats}>
-        <StatCard label="Active Leads"  value={data.activeLeads} color="#3b82f6" />
-        <StatCard label="Open Tickets"  value={data.openTickets} color="#f59e0b" />
+        <StatCard label="Active Leads"      value={data.activeLeads}                    color="#3b82f6" />
+        <StatCard label="Open Tickets"      value={data.openTickets}                    color="#f59e0b" />
+        <StatCard label="Monthly Revenue"   value={`$${Number(data.monthlyRevenue).toLocaleString()}K`} color="#10b981" />
       </div>
       <h3 style={styles.sub}>Top 5 Leads by Score</h3>
       <PriorityTable leads={data.top5} />
@@ -40,7 +53,7 @@ function StatCard({ label, value, color }) {
 const styles = {
   page:      { padding:'24px' },
   heading:   { marginBottom:'20px', color:'#1e293b' },
-  stats:     { display:'flex', gap:'16px', marginBottom:'28px' },
+  stats:     { display:'flex', gap:'16px', marginBottom:'28px', flexWrap:'wrap' },
   card:      { background:'#fff', borderRadius:'10px', padding:'20px 28px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)', minWidth:'160px' },
   cardLabel: { margin:'0 0 8px', color:'#64748b', fontSize:'0.85rem' },
   cardValue: { margin:0, fontSize:'2rem', fontWeight:'bold' },

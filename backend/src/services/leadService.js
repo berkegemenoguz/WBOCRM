@@ -18,7 +18,7 @@ async function getById(id) {
   return lead;
 }
 
-async function createLead({ email, contact_name, metrics, user_id }) {
+async function createLead({ email, contact_name, metrics, deal_value, campaign_id, user_id }) {
   const existing = await leadRepository.findByEmail(email);
   if (existing) {
     const err = new Error('Duplicate email');
@@ -27,7 +27,7 @@ async function createLead({ email, contact_name, metrics, user_id }) {
   }
 
   const priority_score = scoringService.calculateScore(metrics);
-  return leadRepository.create({ email, contact_name, priority_score, user_id });
+  return leadRepository.create({ email, contact_name, priority_score, deal_value, campaign_id, user_id });
 }
 
 async function updateLead(id, fields) {

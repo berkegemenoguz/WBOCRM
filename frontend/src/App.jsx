@@ -1,11 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import NavBar        from './components/NavBar';
-import LoginPage     from './pages/LoginPage';
-import DashboardPage from './pages/DashboardPage';
-import LeadPage      from './pages/LeadPage';
-import TicketPage    from './pages/TicketPage';
-import UsersPage     from './pages/UsersPage';
+import NavBar           from './components/NavBar';
+import LoginPage        from './pages/LoginPage';
+import DashboardPage    from './pages/DashboardPage';
+import LeadPage         from './pages/LeadPage';
+import LeadProfilePage  from './pages/LeadProfilePage';
+import TicketPage       from './pages/TicketPage';
+import UsersPage        from './pages/UsersPage';
 
 function ProtectedLayout({ children }) {
   const { user } = useAuth();
@@ -36,6 +37,11 @@ function AppRoutes() {
       <Route path="/leads" element={
         <ProtectedLayout>
           <RoleRoute roles={['sales', 'admin']}><LeadPage /></RoleRoute>
+        </ProtectedLayout>
+      } />
+      <Route path="/leads/:id" element={
+        <ProtectedLayout>
+          <RoleRoute roles={['sales', 'admin', 'support']}><LeadProfilePage /></RoleRoute>
         </ProtectedLayout>
       } />
       <Route path="/tickets" element={

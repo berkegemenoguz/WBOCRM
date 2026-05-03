@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import LeadForm from '../components/LeadForm';
 
 const STAGE_COLORS = { New:'#6366f1', Contacted:'#3b82f6', Qualified:'#0ea5e9', Closed:'#10b981' };
 
 export default function LeadPage() {
+  const navigate = useNavigate();
   const [leads, setLeads]     = useState([]);
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
@@ -77,7 +79,7 @@ export default function LeadPage() {
       <table style={styles.table}>
         <thead>
           <tr>
-            {['Name', 'Email', 'Stage', 'Score', 'Actions'].map(h => (
+            {['Name', 'Email', 'Stage', 'Score', 'Deal ($K)', 'Actions'].map(h => (
               <th key={h} style={styles.th}>{h}</th>
             ))}
           </tr>
@@ -93,14 +95,16 @@ export default function LeadPage() {
                 </span>
               </td>
               <td style={{ ...styles.td, fontWeight:'bold' }}>{l.priority_score}</td>
+              <td style={styles.td}>{Number(l.deal_value || 0).toLocaleString()}</td>
               <td style={styles.td}>
+                <button onClick={() => navigate(`/leads/${l.lead_id}`)} style={styles.profileBtn}>Profile</button>
                 <button onClick={() => { setEditing(l); setCreating(false); }} style={styles.editBtn}>Edit</button>
                 <button onClick={() => handleDelete(l.lead_id)} style={styles.delBtn}>Delete</button>
               </td>
             </tr>
           ))}
           {leads.length === 0 && (
-            <tr><td colSpan={5} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No leads yet</td></tr>
+            <tr><td colSpan={6} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No leads yet</td></tr>
           )}
         </tbody>
       </table>
@@ -122,6 +126,7 @@ const styles = {
   rowEven:  { background:'#fff' },
   rowOdd:   { background:'#f8fafc' },
   badge:    { color:'#fff', padding:'2px 8px', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'600' },
+  profileBtn:{ background:'#f0fdf4', color:'#16a34a', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
   editBtn:  { background:'#e0f2fe', color:'#0369a1', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
   delBtn:   { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
 };

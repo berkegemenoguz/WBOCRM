@@ -596,14 +596,16 @@ All errors return JSON:
 ### Phase 6 — React Frontend
 
 - [x] **LoginPage.jsx**: form → `POST /api/auth/login` → store JWT → redirect
-- [x] **DashboardPage.jsx**: active lead count, open ticket count, top-5 priority table (UC6)
-- [x] **LeadPage.jsx**: lead list + LeadForm + pipeline dropdown + log history
+- [x] **DashboardPage.jsx**: active lead count, open ticket count, monthly revenue, top-5 priority table (UC6, FR-ST-14); auto-refreshes every 2s (NFR-ST-12)
+- [x] **LeadPage.jsx**: lead list + LeadForm + pipeline dropdown; deal_value and campaign_id fields (FR-SC-13, FR-ST-14)
+- [x] **LeadProfilePage.jsx**: Unified Customer Profile & Support Hub — lead detail, interaction log timeline, linked tickets, note input, stage update, admin lead assignment (FR-ST-04, FR-SC-06, Section 3.8.3)
 - [x] **TicketPage.jsx**: ticket list + TicketForm + status/priority update
 - [x] `api.js`: axios instance, baseURL = Render backend URL, automatic Authorization header
 - [x] Global user state with AuthContext, protected routes
 - [x] Support ticket search and open completable within 5 seconds (NFR-ST-03)
-- [x] Cross-platform: minimum 705px screen width (NFR-ST-02)
+- [x] Cross-platform: minimum 360px viewport width (NFR-ST-02)
 - [x] Lead registration form completable in maximum 3 screen clicks (NFR-ST-01)
+- [x] CSV export endpoint `GET /api/leads/export/csv` (FR-DOC-15)
 
 ### Phase 7 — Tests (BDD/TDD)
 
