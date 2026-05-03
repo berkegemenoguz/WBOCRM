@@ -127,9 +127,9 @@ Rules:
 | Phase 4 | Lead Management API | ✅ |
 | Phase 5 | Support Ticket API | ✅ |
 | Phase 6 | React Frontend | ✅ |
-| Phase 7 | Tests (BDD/TDD) | ⬜ |
-| Phase 8 | Cloud Deployment | ⬜ |
-| Phase 9 | Documentation & Submission | ⬜ |
+| Phase 7 | Tests (BDD/TDD) | ✅ |
+| Phase 8 | Cloud Deployment | ✅ |
+| Phase 9 | Documentation & Submission | ✅ |
 
 ---
 
@@ -609,26 +609,29 @@ All errors return JSON:
 
 ### Phase 7 — Tests (BDD/TDD)
 
-- [ ] **Unit Tests (Jest)**: isolated tests for scoringService, authService, ticketService
-- [ ] **Functional Tests (Supertest)**: verify API endpoints return correct HTTP codes
-- [ ] **Acceptance Tests (Cucumber)**: BDD scenarios in `features/` directory
-- [ ] Save passing test evidence to `test_results/` directory
+- [x] **Unit Tests (Jest)**: isolated tests for scoringService, authService, ticketService (18 tests)
+- [x] **Functional Tests (Supertest)**: verify API endpoints return correct HTTP codes (6 tests)
+- [x] **Acceptance Tests (Cucumber)**: BDD scenarios in `features/` directory (11 scenarios, 4 feature files)
+- [x] Save passing test evidence to `test_results/` directory
 
 ### Phase 8 — Cloud Deployment
 
-- [ ] **Backend → Render**: GitHub integration, add environment variables (`DATABASE_URL`, `JWT_SECRET`)
-- [ ] **Frontend → Vercel**: GitHub integration, `VITE_API_URL` = Render backend URL
-- [ ] **DB → Render PostgreSQL**: managed service, SSL required (NFR-ST-07)
-- [ ] Write deploy URLs to `deployment_info.txt`
-- [ ] Test end-to-end flow on live system and take screenshots
+- [x] `render.yaml` Blueprint for backend + frontend + PostgreSQL on Render
+- [x] `backend/.env.example` and `frontend/.env.example`
+- [x] `deployment_info.txt` with deployment guide
+- [ ] **Backend → Render**: connect GitHub repo, add env vars — requires manual action
+- [ ] **Frontend → Vercel**: connect GitHub repo, add `VITE_API_URL` — requires manual action
+- [ ] Test end-to-end flow on live system and add URLs to `deployment_info.txt`
 
 ### Phase 9 — Documentation & Submission
 
-- [ ] `architecture_description.pdf` — Deployment + Component diagram (minimum 2)
-- [ ] `implementation_summary.pdf` — what was implemented, design decisions (1 page)
-- [ ] `user_stories.pdf` — US-01 through US-08
-- [ ] `acceptance_tests.pdf` — BDD Given/When/Then criteria
-- [ ] Create ZIP: verify `FirstSaaSPrototype/` folder structure
+- [x] `docs/architecture_description.md` + `FirstSaaSPrototype/architecture_description.pdf`
+- [x] `docs/implementation_summary.md` + `FirstSaaSPrototype/implementation_summary.pdf`
+- [x] `docs/user_stories.md` + `FirstSaaSPrototype/user_stories.pdf`
+- [x] `docs/acceptance_tests.md` + `FirstSaaSPrototype/acceptance_tests.pdf`
+- [x] `FirstSaaSPrototype/` folder structure created
+- [ ] Add live app screenshots to `screenshots/` — requires deployed app
+- [ ] Create final ZIP from `FirstSaaSPrototype/`
 
 ---
 
