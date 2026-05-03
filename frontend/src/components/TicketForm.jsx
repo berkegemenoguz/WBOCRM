@@ -41,7 +41,7 @@ export default function TicketForm({ initial = {}, leads = [], onSubmit, onCance
       <label style={styles.label}>Lead
         <select name="lead_id" value={form.lead_id} onChange={handle} required style={styles.input}>
           <option value="">-- select lead --</option>
-          {leads.map(l => <option key={l.lead_id} value={l.lead_id}>{l.name}</option>)}
+          {leads.map(l => <option key={l.lead_id} value={l.lead_id}>{l.contact_name}</option>)}
         </select>
       </label>
       <div style={styles.actions}>

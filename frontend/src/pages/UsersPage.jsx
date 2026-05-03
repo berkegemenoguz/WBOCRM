@@ -43,7 +43,7 @@ export default function UsersPage() {
           {users.map((u, i) => (
             <tr key={u.user_id} style={i % 2 === 0 ? styles.rowEven : styles.rowOdd}>
               <td style={styles.td}>{u.user_id}</td>
-              <td style={styles.td}>{u.email}</td>
+              <td style={styles.td}>{u.user_email}</td>
               <td style={styles.td}>
                 <span style={{ ...styles.badge, background: ROLE_COLORS[u.rbac_role] || '#94a3b8' }}>
                   {u.rbac_role}
