@@ -1,0 +1,68 @@
+const leadRepository = require('../repositories/leadRepository');
+const logRepository  = require('../repositories/logRepository');
+const scoringService = require('./scoringService');
+
+const VALID_STAGES = ['New', 'Contacted', 'Qualified', 'Closed'];
+
+async function getAll() {
+  return leadRepository.findAll();
+}
+
+async function getById(id) {
+  const lead = await leadRepository.findById(id);
+  if (!lead) {
+    const err = new Error('Lead not found');
+    err.code = 'LEAD_NOT_FOUND';
+    throw err;
+  }
+  return lead;
+}
+
+async function createLead({ email, contact_name, metrics, user_id }) {
+  const existing = await leadRepository.findByEmail(email);
+  if (existing) {
+    const err = new Error('Duplicate email');
+    err.code = 'DUPLICATE_EMAIL';
+    throw err;
+  }
+
+  const priority_score = scoringService.calculateScore(metrics);
+  return leadRepository.create({ email, contact_name, priority_score, user_id });
+}
+
+async function updateLead(id, fields) {
+  if (fields.pipeline_stage && !VALID_STAGES.includes(fields.pipeline_stage)) {
+    const err = new Error(`pipeline_stage must be one of: ${VALID_STAGES.join(', ')}`);
+    err.code = 'INVALID_STAGE';
+    throw err;
+  }
+
+  const lead = await leadRepository.update(id, fields);
+  if (!lead) {
+    const err = new Error('Lead not found');
+    err.code = 'LEAD_NOT_FOUND';
+    throw err;
+  }
+  return lead;
+}
+
+async function deleteLead(id) {
+  const deleted = await leadRepository.remove(id);
+  if (!deleted) {
+    const err = new Error('Lead not found');
+    err.code = 'LEAD_NOT_FOUND';
+    throw err;
+  }
+}
+
+async function getLogs(leadId) {
+  await getById(leadId);
+  return logRepository.findByLead(leadId);
+}
+
+async function addLog({ leadId, note_text, user_id }) {
+  await getById(leadId);
+  return logRepository.create({ note_text, lead_id: leadId, user_id });
+}
+
+module.exports = { getAll, getById, createLead, updateLead, deleteLead, getLogs, addLog };

@@ -124,7 +124,7 @@ Rules:
 | Phase 1 | Project Scaffold | ✅ |
 | Phase 2 | Database Schema | ✅ |
 | Phase 3 | Authentication & RBAC | ✅ |
-| Phase 4 | Lead Management API | ⬜ |
+| Phase 4 | Lead Management API | ✅ |
 | Phase 5 | Support Ticket API | ⬜ |
 | Phase 6 | React Frontend | ⬜ |
 | Phase 7 | Tests (BDD/TDD) | ⬜ |
@@ -578,12 +578,12 @@ All errors return JSON:
 
 ### Phase 4 — Lead Management API
 
-- [ ] `POST /api/leads`: email unique check → ScoringService → DB insert
-- [ ] **Lead Scoring Algorithm**: dynamic 0–100 score based on engagement metrics; response ≤500ms (NFR-SC-01)
-- [ ] `GET /api/leads`: `ORDER BY priority_score DESC` (FR-SC-03)
-- [ ] `PUT /api/leads/:id`: update pipeline_stage (UC3)
-- [ ] InteractionLog CRUD: `GET/POST /api/leads/:id/logs` (FR-ST-04)
-- [ ] **TDD**: Write Jest tests for scoringService.calculateScore()
+- [x] `POST /api/leads`: email unique check → ScoringService → DB insert
+- [x] **Lead Scoring Algorithm**: dynamic 0–100 score based on engagement metrics; response ≤500ms (NFR-SC-01)
+- [x] `GET /api/leads`: `ORDER BY priority_score DESC` (FR-SC-03)
+- [x] `PUT /api/leads/:id`: update pipeline_stage (UC3)
+- [x] InteractionLog CRUD: `GET/POST /api/leads/:id/logs` (FR-ST-04)
+- [x] **TDD**: Write Jest tests for scoringService.calculateScore()
 
 ### Phase 5 — Support Ticket API
 
