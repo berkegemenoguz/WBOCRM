@@ -1,18 +1,18 @@
 import { useState } from 'react';
 
-const STAGES = ['New', 'Contacted', 'Qualified', 'Proposal', 'Closed'];
+const STAGES = ['New', 'Contacted', 'Qualified', 'Closed'];
 
 export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
+  const metrics = initial.metrics || {};
   const [form, setForm] = useState({
-    name: initial.name || '',
-    email: initial.email || '',
-    company: initial.company || '',
+    contact_name:   initial.contact_name || '',
+    email:          initial.email        || '',
     pipeline_stage: initial.pipeline_stage || 'New',
-    calls: initial.calls ?? 0,
-    meetings: initial.meetings ?? 0,
-    budget: initial.budget ?? 0,
-    company_size: initial.company_size || 'small',
-    email_opens: initial.email_opens ?? 0,
+    calls:          metrics.calls       ?? 0,
+    meetings:       metrics.meetings    ?? 0,
+    budget:         metrics.budget      ?? 0,
+    companySize:    metrics.companySize  || 'small',
+    emailOpens:     metrics.emailOpens  ?? 0,
   });
 
   function handle(e) {
@@ -22,19 +22,28 @@ export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
 
   function submit(e) {
     e.preventDefault();
-    onSubmit(form);
+    const { contact_name, email, pipeline_stage, calls, meetings, budget, companySize, emailOpens } = form;
+    onSubmit({
+      contact_name,
+      email,
+      pipeline_stage,
+      metrics: {
+        calls:       Number(calls),
+        meetings:    Number(meetings),
+        budget:      Number(budget),
+        companySize,
+        emailOpens:  Number(emailOpens),
+      },
+    });
   }
 
   return (
     <form onSubmit={submit} style={styles.form}>
-      <label style={styles.label}>Name
-        <input name="name" value={form.name} onChange={handle} required style={styles.input} />
+      <label style={styles.label}>Contact Name
+        <input name="contact_name" value={form.contact_name} onChange={handle} required style={styles.input} />
       </label>
       <label style={styles.label}>Email
         <input name="email" type="email" value={form.email} onChange={handle} required style={styles.input} />
-      </label>
-      <label style={styles.label}>Company
-        <input name="company" value={form.company} onChange={handle} style={styles.input} />
       </label>
       <label style={styles.label}>Stage
         <select name="pipeline_stage" value={form.pipeline_stage} onChange={handle} style={styles.input}>
@@ -51,14 +60,14 @@ export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
         <input name="budget" type="number" min="0" value={form.budget} onChange={handle} style={styles.input} />
       </label>
       <label style={styles.label}>Company Size
-        <select name="company_size" value={form.company_size} onChange={handle} style={styles.input}>
+        <select name="companySize" value={form.companySize} onChange={handle} style={styles.input}>
           <option value="small">Small</option>
           <option value="medium">Medium</option>
           <option value="enterprise">Enterprise</option>
         </select>
       </label>
       <label style={styles.label}>Email Opens
-        <input name="email_opens" type="number" min="0" value={form.email_opens} onChange={handle} style={styles.input} />
+        <input name="emailOpens" type="number" min="0" value={form.emailOpens} onChange={handle} style={styles.input} />
       </label>
       <div style={styles.actions}>
         <button type="submit" style={styles.primary}>Save</button>

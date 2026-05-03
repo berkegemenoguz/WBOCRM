@@ -3,7 +3,7 @@ export default function PriorityTable({ leads = [] }) {
     <table style={styles.table}>
       <thead>
         <tr>
-          {['Rank', 'Name', 'Company', 'Stage', 'Score'].map(h => (
+          {['Rank', 'Name', 'Stage', 'Score'].map(h => (
             <th key={h} style={styles.th}>{h}</th>
           ))}
         </tr>
@@ -12,8 +12,7 @@ export default function PriorityTable({ leads = [] }) {
         {leads.map((lead, i) => (
           <tr key={lead.lead_id} style={i % 2 === 0 ? styles.rowEven : styles.rowOdd}>
             <td style={styles.td}>{i + 1}</td>
-            <td style={styles.td}>{lead.name}</td>
-            <td style={styles.td}>{lead.company || '—'}</td>
+            <td style={styles.td}>{lead.contact_name}</td>
             <td style={styles.td}>{lead.pipeline_stage}</td>
             <td style={{ ...styles.td, fontWeight: 'bold', color: scoreColor(lead.priority_score) }}>
               {lead.priority_score}

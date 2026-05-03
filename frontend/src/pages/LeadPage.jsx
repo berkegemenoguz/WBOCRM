@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../services/api';
 import LeadForm from '../components/LeadForm';
 
-const STAGE_COLORS = { New:'#6366f1', Contacted:'#3b82f6', Qualified:'#0ea5e9', Proposal:'#f59e0b', Closed:'#10b981' };
+const STAGE_COLORS = { New:'#6366f1', Contacted:'#3b82f6', Qualified:'#0ea5e9', Closed:'#10b981' };
 
 export default function LeadPage() {
   const [leads, setLeads]     = useState([]);
@@ -77,7 +77,7 @@ export default function LeadPage() {
       <table style={styles.table}>
         <thead>
           <tr>
-            {['Name', 'Email', 'Company', 'Stage', 'Score', 'Actions'].map(h => (
+            {['Name', 'Email', 'Stage', 'Score', 'Actions'].map(h => (
               <th key={h} style={styles.th}>{h}</th>
             ))}
           </tr>
@@ -85,9 +85,8 @@ export default function LeadPage() {
         <tbody>
           {leads.map((l, i) => (
             <tr key={l.lead_id} style={i % 2 === 0 ? styles.rowEven : styles.rowOdd}>
-              <td style={styles.td}>{l.name}</td>
+              <td style={styles.td}>{l.contact_name}</td>
               <td style={styles.td}>{l.email}</td>
-              <td style={styles.td}>{l.company || '—'}</td>
               <td style={styles.td}>
                 <span style={{ ...styles.badge, background: STAGE_COLORS[l.pipeline_stage] || '#94a3b8' }}>
                   {l.pipeline_stage}
@@ -101,7 +100,7 @@ export default function LeadPage() {
             </tr>
           ))}
           {leads.length === 0 && (
-            <tr><td colSpan={6} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No leads yet</td></tr>
+            <tr><td colSpan={5} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No leads yet</td></tr>
           )}
         </tbody>
       </table>
