@@ -1,6 +1,19 @@
 node_modules/
 .env
+.env.local
+.env.production
 dist/
+build/
 coverage/
 *.log
+npm-debug.log*
 .DS_Store
+Thumbs.db
+
+# AI tools
+.claude/
+.cursor/
+.copilot/
+.github/copilot/
+.aider/
+.continue/
