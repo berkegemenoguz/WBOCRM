@@ -126,7 +126,7 @@ Rules:
 | Phase 3 | Authentication & RBAC | ✅ |
 | Phase 4 | Lead Management API | ✅ |
 | Phase 5 | Support Ticket API | ✅ |
-| Phase 6 | React Frontend | ⬜ |
+| Phase 6 | React Frontend | ✅ |
 | Phase 7 | Tests (BDD/TDD) | ⬜ |
 | Phase 8 | Cloud Deployment | ⬜ |
 | Phase 9 | Documentation & Submission | ⬜ |
@@ -595,15 +595,15 @@ All errors return JSON:
 
 ### Phase 6 — React Frontend
 
-- [ ] **LoginPage.jsx**: form → `POST /api/auth/login` → store JWT → redirect
-- [ ] **DashboardPage.jsx**: active lead count, open ticket count, top-5 priority table (UC6)
-- [ ] **LeadPage.jsx**: lead list + LeadForm + pipeline dropdown + log history
-- [ ] **TicketPage.jsx**: ticket list + TicketForm + status/priority update
-- [ ] `api.js`: axios instance, baseURL = Render backend URL, automatic Authorization header
-- [ ] Global user state with AuthContext, protected routes
-- [ ] Support ticket search and open completable within 5 seconds (NFR-ST-03)
-- [ ] Cross-platform: minimum 705px screen width (NFR-ST-02)
-- [ ] Lead registration form completable in maximum 3 screen clicks (NFR-ST-01)
+- [x] **LoginPage.jsx**: form → `POST /api/auth/login` → store JWT → redirect
+- [x] **DashboardPage.jsx**: active lead count, open ticket count, top-5 priority table (UC6)
+- [x] **LeadPage.jsx**: lead list + LeadForm + pipeline dropdown + log history
+- [x] **TicketPage.jsx**: ticket list + TicketForm + status/priority update
+- [x] `api.js`: axios instance, baseURL = Render backend URL, automatic Authorization header
+- [x] Global user state with AuthContext, protected routes
+- [x] Support ticket search and open completable within 5 seconds (NFR-ST-03)
+- [x] Cross-platform: minimum 705px screen width (NFR-ST-02)
+- [x] Lead registration form completable in maximum 3 screen clicks (NFR-ST-01)
 
 ### Phase 7 — Tests (BDD/TDD)
 
