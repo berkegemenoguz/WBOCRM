@@ -630,7 +630,7 @@ All errors return JSON:
 - [x] `docs/user_stories.md` + `FirstSaaSPrototype/user_stories.pdf`
 - [x] `docs/acceptance_tests.md` + `FirstSaaSPrototype/acceptance_tests.pdf`
 - [x] `FirstSaaSPrototype/` folder structure created
-- [ ] Add live app screenshots to `screenshots/` — requires deployed app
+- [x] Add live app screenshots to `screenshots/`
 - [ ] Create final ZIP from `FirstSaaSPrototype/`
 
 ---
