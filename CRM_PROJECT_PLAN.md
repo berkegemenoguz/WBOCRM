@@ -631,7 +631,7 @@ All errors return JSON:
 - [x] `docs/acceptance_tests.md` + `FirstSaaSPrototype/acceptance_tests.pdf`
 - [x] `FirstSaaSPrototype/` folder structure created
 - [x] Add live app screenshots to `screenshots/`
-- [ ] Create final ZIP from `FirstSaaSPrototype/`
+- [x] Create final ZIP from `FirstSaaSPrototype/`
 
 ---
 
