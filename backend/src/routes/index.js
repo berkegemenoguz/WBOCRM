@@ -57,11 +57,11 @@ router.post('/setup', async (req, res) => {
   }
 });
 
-// Leads (sales + admin)
+// Leads (read: all roles; write: sales + admin only)
 router.get('/leads/export/csv', authMiddleware, allowRoles('sales', 'admin'), leadController.exportCsv);
-router.get('/leads',            authMiddleware, allowRoles('sales', 'admin'), leadController.getAll);
+router.get('/leads',            authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getAll);
 router.post('/leads',           authMiddleware, allowRoles('sales', 'admin'), leadController.create);
-router.get('/leads/:id',        authMiddleware, allowRoles('sales', 'admin'), leadController.getById);
+router.get('/leads/:id',        authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getById);
 router.put('/leads/:id',        authMiddleware, allowRoles('sales', 'admin'), leadController.update);
 router.delete('/leads/:id',     authMiddleware, allowRoles('sales', 'admin'), leadController.remove);
 
