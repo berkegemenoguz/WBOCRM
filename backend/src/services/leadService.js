@@ -60,6 +60,8 @@ async function updateLead(id, fields) {
 }
 
 async function deleteLead(id) {
+  // Remove dependent rows first (handles DBs that may not yet have CASCADE constraint)
+  await leadRepository.removeRelated(id);
   const deleted = await leadRepository.remove(id);
   if (!deleted) {
     const err = new Error('Lead not found');

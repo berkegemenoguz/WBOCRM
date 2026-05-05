@@ -32,6 +32,16 @@ ALTER TABLE Lead ADD COLUMN IF NOT EXISTS budget DECIMAL(10,2) DEFAULT 0.0;
 ALTER TABLE Lead ADD COLUMN IF NOT EXISTS company_size VARCHAR(20) DEFAULT 'small';
 ALTER TABLE Lead ADD COLUMN IF NOT EXISTS email_opens INTEGER DEFAULT 0;
 
+-- Ensure cascade delete on InteractionLog → Lead
+ALTER TABLE InteractionLog DROP CONSTRAINT IF EXISTS interactionlog_lead_id_fkey;
+ALTER TABLE InteractionLog ADD CONSTRAINT interactionlog_lead_id_fkey
+  FOREIGN KEY (lead_id) REFERENCES Lead(lead_id) ON DELETE CASCADE;
+
+-- Ensure cascade delete on SupportTicket → Lead
+ALTER TABLE SupportTicket DROP CONSTRAINT IF EXISTS supportticket_lead_id_fkey;
+ALTER TABLE SupportTicket ADD CONSTRAINT supportticket_lead_id_fkey
+  FOREIGN KEY (lead_id) REFERENCES Lead(lead_id) ON DELETE CASCADE;
+
 -- SupportTicket (FR-ST-05, FR-ST-07)
 CREATE TABLE IF NOT EXISTS SupportTicket (
   ticket_id      SERIAL PRIMARY KEY,
