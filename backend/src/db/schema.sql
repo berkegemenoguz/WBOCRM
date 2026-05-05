@@ -16,11 +16,21 @@ CREATE TABLE IF NOT EXISTS Lead (
   priority_score DECIMAL(5,2) DEFAULT 0.0,
   pipeline_stage VARCHAR(50)  DEFAULT 'New'
                  CHECK (pipeline_stage IN ('New', 'Contacted', 'Qualified', 'Closed')),
-  deal_value     DECIMAL(10,2) DEFAULT 0.0,   -- FR-ST-14: monthly revenue tracking
-  campaign_id    VARCHAR(100),                -- FR-SC-13: marketing campaign linking
+  deal_value     DECIMAL(10,2) DEFAULT 0.0,
+  campaign_id    VARCHAR(100),
+  calls          INTEGER DEFAULT 0,
+  meetings       INTEGER DEFAULT 0,
+  budget         DECIMAL(10,2) DEFAULT 0.0,
+  company_size   VARCHAR(20) DEFAULT 'small',
+  email_opens    INTEGER DEFAULT 0,
   user_id        INTEGER REFERENCES UserAccount(user_id),
   created_at     TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE Lead ADD COLUMN IF NOT EXISTS calls INTEGER DEFAULT 0;
+ALTER TABLE Lead ADD COLUMN IF NOT EXISTS meetings INTEGER DEFAULT 0;
+ALTER TABLE Lead ADD COLUMN IF NOT EXISTS budget DECIMAL(10,2) DEFAULT 0.0;
+ALTER TABLE Lead ADD COLUMN IF NOT EXISTS company_size VARCHAR(20) DEFAULT 'small';
+ALTER TABLE Lead ADD COLUMN IF NOT EXISTS email_opens INTEGER DEFAULT 0;
 
 -- SupportTicket (FR-ST-05, FR-ST-07)
 CREATE TABLE IF NOT EXISTS SupportTicket (

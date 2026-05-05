@@ -26,8 +26,9 @@ async function createLead({ email, contact_name, metrics, deal_value, campaign_i
     throw err;
   }
 
-  const priority_score = scoringService.calculateScore(metrics);
-  return leadRepository.create({ email, contact_name, priority_score, deal_value, campaign_id, user_id });
+  const priority_score = scoringService.calculateScore(metrics || {});
+  const { calls = 0, meetings = 0, budget = 0, companySize = 'small', emailOpens = 0 } = metrics || {};
+  return leadRepository.create({ email, contact_name, priority_score, deal_value, campaign_id, calls, meetings, budget, company_size: companySize, email_opens: emailOpens, user_id });
 }
 
 async function updateLead(id, fields) {
@@ -35,6 +36,18 @@ async function updateLead(id, fields) {
     const err = new Error(`pipeline_stage must be one of: ${VALID_STAGES.join(', ')}`);
     err.code = 'INVALID_STAGE';
     throw err;
+  }
+
+  // Recalculate score if metrics provided
+  if (fields.metrics) {
+    fields.priority_score = scoringService.calculateScore(fields.metrics);
+    const { calls = 0, meetings = 0, budget = 0, companySize = 'small', emailOpens = 0 } = fields.metrics;
+    fields.calls = calls;
+    fields.meetings = meetings;
+    fields.budget = budget;
+    fields.company_size = companySize;
+    fields.email_opens = emailOpens;
+    delete fields.metrics;
   }
 
   const lead = await leadRepository.update(id, fields);

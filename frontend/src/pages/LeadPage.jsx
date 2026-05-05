@@ -98,7 +98,7 @@ export default function LeadPage() {
               <td style={styles.td}>{Number(l.deal_value || 0).toLocaleString()}</td>
               <td style={styles.td}>
                 <button onClick={() => navigate(`/leads/${l.lead_id}`)} style={styles.profileBtn}>Profile</button>
-                <button onClick={() => { setEditing(l); setCreating(false); }} style={styles.editBtn}>Edit</button>
+                <button onClick={() => { setEditing({ ...l, metrics: { calls: l.calls || 0, meetings: l.meetings || 0, budget: l.budget || 0, companySize: l.company_size || 'small', emailOpens: l.email_opens || 0 } }); setCreating(false); }} style={styles.editBtn}>Edit</button>
                 <button onClick={() => handleDelete(l.lead_id)} style={styles.delBtn}>Delete</button>
               </td>
             </tr>
