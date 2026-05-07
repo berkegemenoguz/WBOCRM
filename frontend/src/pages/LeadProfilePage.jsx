@@ -18,8 +18,10 @@ export default function LeadProfilePage() {
   const [logs, setLogs]       = useState([]);
   const [tickets, setTickets] = useState([]);
   const [users, setUsers]     = useState([]);
-  const [note, setNote]       = useState('');
-  const [error, setError]     = useState('');
+  const [note, setNote]             = useState('');
+  const [error, setError]           = useState('');
+  const [newTicket, setNewTicket]   = useState({ description: '', priority_level: 'Medium' });
+  const [showTicketForm, setShowTicketForm] = useState(false);
 
   async function fetchAll() {
     try {
@@ -73,6 +75,20 @@ export default function LeadProfilePage() {
       setLogs(logRes.data);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to add note');
+    }
+  }
+
+  async function handleGenerateTicket(e) {
+    e.preventDefault();
+    if (!newTicket.description.trim()) return;
+    try {
+      await api.post('/tickets', { ...newTicket, lead_id: Number(id) });
+      setNewTicket({ description: '', priority_level: 'Medium' });
+      setShowTicketForm(false);
+      const tRes = await api.get('/tickets');
+      setTickets(tRes.data.filter(t => String(t.lead_id) === String(id)));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create ticket');
     }
   }
 
@@ -172,7 +188,33 @@ export default function LeadProfilePage() {
           {/* Linked Support Tickets */}
           {(role === 'support' || role === 'admin') && (
             <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>Support Tickets</h3>
+              <div style={styles.sectionHeader}>
+                <h3 style={styles.sectionTitle}>Support Tickets</h3>
+                <button onClick={() => setShowTicketForm(v => !v)} style={styles.genBtn}>
+                  {showTicketForm ? 'Cancel' : '+ Generate Ticket'}
+                </button>
+              </div>
+              {showTicketForm && (
+                <form onSubmit={handleGenerateTicket} style={styles.ticketForm}>
+                  <input
+                    value={newTicket.description}
+                    onChange={e => setNewTicket(t => ({ ...t, description: e.target.value }))}
+                    placeholder="Ticket description…"
+                    required
+                    style={styles.noteInput}
+                  />
+                  <select
+                    value={newTicket.priority_level}
+                    onChange={e => setNewTicket(t => ({ ...t, priority_level: e.target.value }))}
+                    style={styles.select}
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                  <button type="submit" style={styles.noteBtn}>Create</button>
+                </form>
+              )}
               {tickets.length === 0 && <p style={styles.empty}>No tickets linked to this lead.</p>}
               {tickets.map(t => (
                 <div key={t.ticket_id} style={styles.ticketRow}>
@@ -214,7 +256,10 @@ const styles = {
   select:       { padding:'4px 8px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.85rem' },
   rightPanel:   { display:'flex', flexDirection:'column', gap:'20px' },
   section:      { background:'#fff', borderRadius:'12px', padding:'20px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
-  sectionTitle: { margin:'0 0 16px', color:'#1e293b', fontSize:'1rem' },
+  sectionTitle:  { margin:0, color:'#1e293b', fontSize:'1rem' },
+  sectionHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' },
+  genBtn:        { background:'#f0fdf4', color:'#16a34a', border:'1px solid #bbf7d0', borderRadius:'6px', padding:'5px 12px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
+  ticketForm:    { display:'flex', gap:'8px', marginBottom:'12px', flexWrap:'wrap' },
   timeline:     { display:'flex', flexDirection:'column', gap:'12px', marginBottom:'16px' },
   logEntry:     { display:'flex', gap:'12px', alignItems:'flex-start' },
   logDot:       { width:'10px', height:'10px', borderRadius:'50%', background:'#3b82f6', marginTop:'4px', flexShrink:0 },
