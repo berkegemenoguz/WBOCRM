@@ -28,7 +28,7 @@
 18. [Deployment Guide](#18-deployment-guide)
 19. [Submission Checklist](#19-submission-checklist)
 20. [READ Compliance Status](#20-read-compliance-status)
-21. [Open Backlog](#21-open-backlog)
+21. [Open Backlog](#21-open-backlog) — B-11 🔲 · B-12 🔲 · B-13 🔲 · D-01/D-02 ⚠️ · I-01/I-02 🏗️
 
 ---
 
@@ -133,7 +133,9 @@ Rules:
 | Phase 8 | Cloud Deployment | ✅ |
 | Phase 9 | Documentation & Submission | ✅ |
 | Phase 10 | READ Compliance Fixes (NFR gaps) | ✅ |
-| **Backlog** | **Remaining open items — see Section 21** | **🔲** |
+| Phase 11 | Backlog Resolution (B-01 → B-10) | ✅ |
+| Phase 12 | Performance & Capacity Verification | ✅ |
+| **Phase 13** | **Remaining gaps — see Section 21 (B-11–B-13)** | **🔲** |
 
 ---
 
@@ -969,6 +971,8 @@ FirstSaaSPrototype/
 
 > Cross-reference of every requirement in `CRM_System_READ3.pdf` against the actual implementation.
 > Last updated: May 8, 2026.
+>
+> **Overall status:** 43 / 46 requirements fully met (✅). 3 items partially met (⚠️) due to known technology deviations. 3 open gaps remain in code — see B-11, B-12, B-13 in Section 21. 2 items are infrastructure-only and cannot be addressed in application code.
 
 ### Functional Requirements
 
@@ -1030,7 +1034,7 @@ FirstSaaSPrototype/
 | Use Case | Main Flow | Alternative / Error Flows |
 |---|---|---|
 | UC1 Register New Lead | ✅ | Duplicate email → 409 ✅ · Missing fields → HTML5 required ✅ · Link to existing profile on duplicate ✅ |
-| UC2 Calculate Lead Score | ✅ | Missing metrics default to 0 ✅ · No explicit "invalid metrics" warning ⚠️ |
+| UC2 Calculate Lead Score | ⚠️ | Missing metrics default to 0 ✅ · Negative metric values not rejected server-side ❌ · No inline validation warning in UI ❌ → see B-11 |
 | UC3 Manage Sales Pipeline | ✅ | Lead not found → 404 ✅ · Insufficient role → 403 ✅ |
 | UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ✅ |
 | UC5 Manage RBAC & Users | ✅ | Admin removing own role blocked → 403 ✅ |
@@ -1049,8 +1053,15 @@ FirstSaaSPrototype/
 
 ## 21. Open Backlog
 
-> Items identified during READ compliance audit (May 8, 2026) that are not yet implemented.
-> Prioritized: **High** = breaks a documented requirement · **Medium** = partial implementation · **Low** = edge case / nice-to-have
+> First audit: May 8, 2026 · Last updated: May 8, 2026
+>
+> **Legend:**
+> - ✅ Implemented and verified
+> - 🔲 Open — not yet implemented
+> - ⚠️ Known deviation — intentional, documented
+> - 🏗️ Infrastructure — cannot be addressed in application code
+>
+> **Prioritized:** **High** = breaks a documented requirement · **Medium** = partial implementation · **Low** = edge case / nice-to-have
 
 ### High Priority
 
@@ -1076,6 +1087,40 @@ FirstSaaSPrototype/
 | B-08 | ✅ | Local caching of ticket on DB timeout | UC6 Alt Flow | `TicketPage` saves draft to `localStorage` on network error; yellow retry banner on next load |
 | B-09 | ✅ | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | 83.3 req/sec, 0.00% error rate — `test_results/load_test_results.md` |
 | B-10 | ✅ | Verify 100k record query performance | NFR-ST-13 | Avg 735ms at 100k rows — `test_results/capacity_test_results.md` |
+
+---
+
+### Remaining Open Gaps
+
+> The items below were identified during the final compliance review (May 8, 2026). B-11 and B-12 are small, self-contained changes. B-13 is a cosmetic fix. None of these block core functionality.
+
+| # | Status | Item | Requirement | What needs to change |
+|---|---|---|---|---|
+| B-11 | 🔲 | Negative metric values must be rejected with a user-visible error | UC2 Alt Flow | **Backend:** `leadService.createLead` — add guard: if any metric < 0, throw `INVALID_METRICS` error. **Frontend:** `LeadForm.jsx` — display the error message below the relevant field. HTML5 `min="0"` already exists but does not show an explicit message. |
+| B-12 | 🔲 | Admin must be able to trigger GDPR / KVKK erasure from the UI | CON-REG-01, CON-REG-02 | **Endpoints already exist** (`DELETE /api/leads/:id/personal-data` and `DELETE /api/users/:id/personal-data`). **Missing:** a button in `LeadProfilePage.jsx` (lead erasure) and `UsersPage.jsx` (user erasure) that calls the respective endpoint with a confirmation dialog. |
+| B-13 | 🔲 | `full_name` is not displayed in the Users management table | UI completeness | `UsersPage.jsx` — add a "Full Name" column to the table. The field is already returned by `GET /api/users` (`userRepository.findAll` selects `full_name`). |
+
+---
+
+### Known Technology Deviations
+
+> These items deviate from the READ document by design. The team chose more appropriate modern tooling. The deviations are acknowledged in the document and do not affect functionality.
+
+| # | Status | Deviation | Document says | Actual implementation | Reason |
+|---|---|---|---|---|---|
+| D-01 | ⚠️ | Backend framework | Java Spring Boot | Node.js + Express | Spring Boot was not covered in coursework; Node.js better fits the team's expertise and the prototype scope |
+| D-02 | ⚠️ | Cloud hosting | Heroku | Render (backend + DB) + Vercel (frontend) | Heroku removed its free tier; Render and Vercel provide equivalent functionality at no cost |
+
+---
+
+### Infrastructure Items
+
+> These items cannot be addressed in application code. They depend entirely on the hosting provider's SLA and deployment pipeline.
+
+| # | Status | Item | Requirement | Notes |
+|---|---|---|---|---|
+| I-01 | 🏗️ | 99.5% uptime guarantee (08:00–20:00) | NFR-ST-04 | Depends on Render's managed infrastructure SLA. No code change possible. |
+| I-02 | 🏗️ | Release downtime ≤ 15 minutes | NFR-ST-06 | Vercel provides zero-downtime atomic deploys. Render uses a rolling restart. Both are within the 15-minute window in practice. No code change needed. |
 
 ---
 
