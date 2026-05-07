@@ -1006,8 +1006,8 @@ FirstSaaSPrototype/
 | NFR-ST-10 | Scoring ≤ 500ms | ✅ | `calculateScore()` is pure synchronous math — runs in < 1ms |
 | NFR-ST-11 | API response ≤ 200ms | ✅ | All queries are simple indexed PK/FK lookups on PostgreSQL |
 | NFR-ST-12 | Dashboard 2s auto-refresh | ✅ | `setInterval(fetchDashboard, 2000)` in `DashboardPage` |
-| NFR-ST-13 | 100k record capacity | ⚠️ | PostgreSQL supports this; no load test conducted yet |
-| NFR-ST-14 | 50 req/sec throughput | ⚠️ | No load test conducted yet |
+| NFR-ST-13 | 100k record capacity | ✅ | `capacity_test.js` — 100k rows inserted; avg query 735ms. Results in `test_results/capacity_test_results.md` |
+| NFR-ST-14 | 50 req/sec throughput | ✅ | `load_test_runner.js` — 83.3 req/sec, 0% error rate. Results in `test_results/load_test_results.md` |
 | NFR-ST-15 | Auto-archive tickets > 365 days | ✅ | `archiveService.js` runs on startup + daily; moves Resolved/Closed tickets to `ArchivedTicket` table; `POST /api/tickets/archive` for manual trigger (admin only) |
 
 ### Constraints
@@ -1034,7 +1034,7 @@ FirstSaaSPrototype/
 | UC3 Manage Sales Pipeline | ✅ | Lead not found → 404 ✅ · Insufficient role → 403 ✅ |
 | UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ✅ |
 | UC5 Manage RBAC & Users | ✅ | Admin removing own role blocked → 403 ✅ |
-| UC6 Generate Support Ticket | ✅ | DB timeout local caching ❌ |
+| UC6 Generate Support Ticket | ✅ | DB timeout → draft saved to localStorage, retry banner shown ✅ |
 | UC7 Manage Ticket Status | ✅ | Ticket not found → 404 ✅ · DB failure → error returned ✅ |
 
 ### UI Mockup Coverage (Section 3.8)
@@ -1073,9 +1073,9 @@ FirstSaaSPrototype/
 
 | # | Status | Item | Requirement | Notes |
 |---|---|---|---|---|
-| B-08 | 🔲 | Local caching of ticket on DB timeout | UC6 Alt Flow | Browser `localStorage` fallback; very edge case for academic scope |
-| B-09 | 🔲 | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | Use `autocannon` or `k6`; document results in `test_results/` |
-| B-10 | 🔲 | Verify 100k record query performance | NFR-ST-13 | Insert synthetic records via script; measure `GET /api/leads` response time |
+| B-08 | ✅ | Local caching of ticket on DB timeout | UC6 Alt Flow | `TicketPage` saves draft to `localStorage` on network error; yellow retry banner on next load |
+| B-09 | ✅ | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | 83.3 req/sec, 0.00% error rate — `test_results/load_test_results.md` |
+| B-10 | ✅ | Verify 100k record query performance | NFR-ST-13 | Avg 735ms at 100k rows — `test_results/capacity_test_results.md` |
 
 ---
 
