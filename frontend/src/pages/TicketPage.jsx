@@ -82,6 +82,7 @@ export default function TicketPage() {
         </div>
       )}
 
+      <div className="table-scroll">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -117,6 +118,7 @@ export default function TicketPage() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

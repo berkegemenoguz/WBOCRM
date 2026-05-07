@@ -83,7 +83,7 @@ export default function LeadProfilePage() {
     <div style={styles.page}>
       <button onClick={() => navigate('/leads')} style={styles.back}>← Back to Leads</button>
 
-      <div style={styles.layout}>
+      <div className="profile-layout">
 
         {/* LEFT: Lead Static Info */}
         <div style={styles.card}>
@@ -202,7 +202,7 @@ function scoreColor(score) {
 const styles = {
   page:         { padding:'24px', maxWidth:'1100px', margin:'0 auto' },
   back:         { background:'none', border:'none', color:'#3b82f6', cursor:'pointer', fontSize:'0.9rem', marginBottom:'16px', padding:0 },
-  layout:       { display:'grid', gridTemplateColumns:'320px 1fr', gap:'24px', alignItems:'start' },
+  layout:       {},
   card:         { background:'#fff', borderRadius:'12px', padding:'24px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
   name:         { margin:'0 0 4px', color:'#1e293b', fontSize:'1.3rem' },
   email:        { margin:'0 0 20px', color:'#64748b', fontSize:'0.9rem' },

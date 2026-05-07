@@ -1,0 +1,27 @@
+/* Base */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; color: #1a1a2e; }
+
+/* Nav */
+.nav { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; padding: 12px 24px; background: #1e293b; color: #fff; }
+.nav-brand { font-weight: bold; font-size: 1.1rem; }
+.nav-links { display: flex; flex-wrap: wrap; gap: 12px; }
+.nav-link { color: #94a3b8; text-decoration: none; font-size: 0.9rem; }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+
+/* Lead profile two-column layout */
+.profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 24px; align-items: start; }
+
+/* Lead form two-column grid */
+.lead-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+.lead-form-grid .form-actions { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Scrollable table wrapper */
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Responsive breakpoint — 640px */
+@media (max-width: 640px) {
+  .nav { padding: 10px 16px; }
+  .profile-layout { grid-template-columns: 1fr; }
+  .lead-form-grid { grid-template-columns: 1fr; }
+}

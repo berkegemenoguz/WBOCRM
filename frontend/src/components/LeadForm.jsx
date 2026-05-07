@@ -42,7 +42,7 @@ export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
   }
 
   return (
-    <form onSubmit={submit} style={styles.form}>
+    <form onSubmit={submit} className="lead-form-grid">
       <label style={styles.label}>Contact Name
         <input name="contact_name" value={form.contact_name} onChange={handle} required style={styles.input} />
       </label>
@@ -79,7 +79,7 @@ export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
       <label style={styles.label}>Email Opens
         <input name="emailOpens" type="number" min="0" value={form.emailOpens} onChange={handle} style={styles.input} />
       </label>
-      <div style={styles.actions}>
+      <div className="form-actions">
         <button type="submit" style={styles.primary}>Save</button>
         {onCancel && <button type="button" onClick={onCancel} style={styles.secondary}>Cancel</button>}
       </div>
@@ -88,10 +88,8 @@ export default function LeadForm({ initial = {}, onSubmit, onCancel }) {
 }
 
 const styles = {
-  form:      { display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px', padding:'16px' },
   label:     { display:'flex', flexDirection:'column', gap:'4px', fontSize:'0.85rem', color:'#374151' },
   input:     { padding:'6px 10px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.9rem' },
-  actions:   { gridColumn:'1/-1', display:'flex', gap:'8px', justifyContent:'flex-end' },
   primary:   { background:'#3b82f6', color:'#fff', border:'none', borderRadius:'6px', padding:'8px 20px', cursor:'pointer' },
   secondary: { background:'#e5e7eb', color:'#374151', border:'none', borderRadius:'6px', padding:'8px 20px', cursor:'pointer' },
 };

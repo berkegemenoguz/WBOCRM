@@ -31,6 +31,7 @@ export default function UsersPage() {
     <div style={styles.page}>
       <h2 style={styles.heading}>User Management</h2>
       {error && <p style={styles.error}>{error}</p>}
+      <div className="table-scroll">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -65,6 +66,7 @@ export default function UsersPage() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

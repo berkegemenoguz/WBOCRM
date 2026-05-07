@@ -76,6 +76,7 @@ export default function LeadPage() {
         </div>
       )}
 
+      <div className="table-scroll">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -108,6 +109,7 @@ export default function LeadPage() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
