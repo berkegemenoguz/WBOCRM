@@ -12,6 +12,9 @@ export default function TicketPage() {
   const [creating, setCreating] = useState(false);
   const [error, setError]       = useState('');
   const [query, setQuery]       = useState('');
+  const [pendingDraft, setPendingDraft] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('crm_pending_ticket')) || null; } catch { return null; }
+  });
 
   async function fetchAll() {
     try {
@@ -28,11 +31,30 @@ export default function TicketPage() {
   async function handleCreate(form) {
     try {
       await api.post('/tickets', form);
+      localStorage.removeItem('crm_pending_ticket');
+      setPendingDraft(null);
       setCreating(false);
       fetchAll();
     } catch (err) {
-      setError(err.response?.data?.message || 'Create failed');
+      // No server response = network/DB timeout — cache locally
+      if (!err.response) {
+        localStorage.setItem('crm_pending_ticket', JSON.stringify(form));
+        setPendingDraft(form);
+        setError('Server unreachable — ticket saved locally. Click "Retry" when connection is restored.');
+      } else {
+        setError(err.response?.data?.message || 'Create failed');
+      }
     }
+  }
+
+  async function retryPending() {
+    if (!pendingDraft) return;
+    await handleCreate(pendingDraft);
+  }
+
+  function dismissPending() {
+    localStorage.removeItem('crm_pending_ticket');
+    setPendingDraft(null);
   }
 
   async function handleUpdate(form) {
@@ -75,6 +97,14 @@ export default function TicketPage() {
         <h2 style={styles.heading}>Support Tickets</h2>
         <button onClick={() => { setCreating(true); setEditing(null); }} style={styles.addBtn}>+ New Ticket</button>
       </div>
+
+      {pendingDraft && (
+        <div style={styles.pending}>
+          <span>⚠️ You have an unsaved ticket draft: &ldquo;{pendingDraft.description}&rdquo;</span>
+          <button onClick={retryPending} style={styles.retryBtn}>Retry</button>
+          <button onClick={dismissPending} style={styles.dismissBtn}>Dismiss</button>
+        </div>
+      )}
 
       {error && <p style={styles.error}>{error}</p>}
 
@@ -160,5 +190,8 @@ const styles = {
   rowOdd:   { background:'#f8fafc' },
   badge:    { color:'#fff', padding:'2px 8px', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'600' },
   editBtn:  { background:'#e0f2fe', color:'#0369a1', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
-  delBtn:   { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
+  delBtn:      { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
+  pending:     { display:'flex', alignItems:'center', gap:'12px', background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'6px', padding:'8px 12px', marginBottom:'12px', fontSize:'0.85rem', color:'#92400e', flexWrap:'wrap' },
+  retryBtn:    { background:'#f59e0b', color:'#fff', border:'none', borderRadius:'4px', padding:'4px 12px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
+  dismissBtn:  { background:'none', border:'1px solid #d97706', color:'#92400e', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
 };
