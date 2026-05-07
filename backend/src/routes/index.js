@@ -59,12 +59,14 @@ router.post('/setup', async (req, res) => {
 });
 
 // Leads (read: all roles; write: sales + admin only)
-router.get('/leads/export/csv', authMiddleware, allowRoles('sales', 'admin'), leadController.exportCsv);
-router.get('/leads',            authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getAll);
-router.post('/leads',           authMiddleware, allowRoles('sales', 'admin'), leadController.create);
-router.get('/leads/:id',        authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getById);
-router.put('/leads/:id',        authMiddleware, allowRoles('sales', 'admin'), leadController.update);
-router.delete('/leads/:id',     authMiddleware, allowRoles('sales', 'admin'), leadController.remove);
+router.get('/leads/export/csv',          authMiddleware, allowRoles('sales', 'admin'), leadController.exportCsv);
+router.get('/leads',                     authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getAll);
+router.post('/leads',                    authMiddleware, allowRoles('sales', 'admin'), leadController.create);
+router.get('/leads/:id',                 authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getById);
+router.put('/leads/:id',                 authMiddleware, allowRoles('sales', 'admin'), leadController.update);
+router.delete('/leads/:id',              authMiddleware, allowRoles('sales', 'admin'), leadController.remove);
+// GDPR right-to-erasure — admin only
+router.delete('/leads/:id/personal-data', authMiddleware, allowRoles('admin'), leadController.erasePersonalData);
 
 // Interaction logs
 router.get('/leads/:id/logs',  authMiddleware, logController.getByLead);
@@ -81,8 +83,10 @@ router.delete('/tickets/:id', authMiddleware, allowRoles('support', 'admin'), ti
 router.get('/dashboard', authMiddleware, dashboardController.get);
 
 // Users (admin only)
-router.get('/users',             authMiddleware, allowRoles('admin'), userController.getAll);
-router.put('/users/:id/role',    authMiddleware, allowRoles('admin'), userController.updateRole);
+router.get('/users',                       authMiddleware, allowRoles('admin'), userController.getAll);
+router.put('/users/:id/role',              authMiddleware, allowRoles('admin'), userController.updateRole);
+// KVKK right-to-erasure — admin only
+router.delete('/users/:id/personal-data', authMiddleware, allowRoles('admin'), userController.erasePersonalData);
 
 // Manual archive trigger (admin only — NFR-ST-15)
 router.post('/tickets/archive', authMiddleware, allowRoles('admin'), async (_req, res) => {

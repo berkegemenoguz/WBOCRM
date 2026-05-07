@@ -34,4 +34,13 @@ async function updateRole(userId, rbac_role) {
   return rows[0] || null;
 }
 
-module.exports = { findByEmail, create, findAll, updateRole };
+// Anonymise PII — KVKK right-to-erasure
+async function erasePersonalData(userId) {
+  const { rowCount } = await pool.query(
+    `UPDATE UserAccount SET user_email = 'erased_' || user_id || '@erased.invalid', full_name = '[Erased]' WHERE user_id = $1`,
+    [userId]
+  );
+  return rowCount > 0;
+}
+
+module.exports = { findByEmail, create, findAll, updateRole, erasePersonalData };

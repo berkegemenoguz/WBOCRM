@@ -58,6 +58,17 @@ async function remove(id) {
   return rowCount > 0;
 }
 
+// Anonymise PII and purge interaction logs — GDPR/KVKK right-to-erasure
+async function erasePersonalData(id) {
+  const { rowCount } = await pool.query(
+    `UPDATE Lead SET email = 'erased_' || lead_id || '@erased.invalid', contact_name = '[Erased]' WHERE lead_id = $1`,
+    [id]
+  );
+  if (rowCount === 0) return false;
+  await pool.query('DELETE FROM InteractionLog WHERE lead_id = $1', [id]);
+  return true;
+}
+
 async function topByScore(limit = 5) {
   const { rows } = await pool.query(
     'SELECT * FROM Lead ORDER BY priority_score DESC LIMIT $1',
@@ -83,4 +94,4 @@ async function monthlyRevenue() {
   return parseFloat(rows[0].revenue);
 }
 
-module.exports = { findAll, findById, findByEmail, create, update, removeRelated, remove, topByScore, countActive, monthlyRevenue };
+module.exports = { findAll, findById, findByEmail, create, update, removeRelated, remove, erasePersonalData, topByScore, countActive, monthlyRevenue };
