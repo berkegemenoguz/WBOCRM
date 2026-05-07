@@ -56,6 +56,19 @@ CREATE TABLE IF NOT EXISTS SupportTicket (
   updated_at     TIMESTAMP DEFAULT NOW()
 );
 
+-- ArchivedTicket — secondary tier for tickets older than 365 days (NFR-ST-15)
+CREATE TABLE IF NOT EXISTS ArchivedTicket (
+  ticket_id      INTEGER PRIMARY KEY,
+  description    TEXT NOT NULL,
+  priority_level VARCHAR(10) NOT NULL,
+  status         VARCHAR(20) NOT NULL,
+  lead_id        INTEGER,
+  user_id        INTEGER,
+  created_at     TIMESTAMP,
+  updated_at     TIMESTAMP,
+  archived_at    TIMESTAMP DEFAULT NOW()
+);
+
 -- InteractionLog (FR-ST-04)
 CREATE TABLE IF NOT EXISTS InteractionLog (
   log_id    SERIAL PRIMARY KEY,

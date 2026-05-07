@@ -7,6 +7,7 @@ const logController     = require('../controllers/logController');
 const ticketController     = require('../controllers/ticketController');
 const dashboardController  = require('../controllers/dashboardController');
 const userController       = require('../controllers/userController');
+const { archiveOldTickets } = require('../services/archiveService');
 
 const router = Router();
 
@@ -82,5 +83,11 @@ router.get('/dashboard', authMiddleware, dashboardController.get);
 // Users (admin only)
 router.get('/users',             authMiddleware, allowRoles('admin'), userController.getAll);
 router.put('/users/:id/role',    authMiddleware, allowRoles('admin'), userController.updateRole);
+
+// Manual archive trigger (admin only — NFR-ST-15)
+router.post('/tickets/archive', authMiddleware, allowRoles('admin'), async (_req, res) => {
+  const count = await archiveOldTickets();
+  res.json({ archived: count });
+});
 
 module.exports = router;
