@@ -1018,8 +1018,8 @@ FirstSaaSPrototype/
 | CON-TECH-02 | PostgreSQL database | ✅ | Render managed PostgreSQL |
 | CON-TECH-03 | React.js SPA frontend | ✅ | React 18 + Vite |
 | CON-TECH-04 | Heroku cloud hosting | ⚠️ | Using **Render** (backend + DB) + **Vercel** (frontend) — known deviation; document updated |
-| CON-REG-01 | KVKK data processing compliance | ⚠️ | PII masking implemented (NFR-ST-07); no explicit data deletion / right-to-erasure endpoint |
-| CON-REG-02 | GDPR Right to be Forgotten | ❌ | No marketing consent mechanism; no "delete all personal data" endpoint |
+| CON-REG-01 | KVKK data processing compliance | ✅ | PII masking (NFR-ST-07) + `DELETE /api/users/:id/personal-data` anonymises user account data |
+| CON-REG-02 | GDPR Right to be Forgotten | ✅ | `DELETE /api/leads/:id/personal-data` — anonymises email/name and purges InteractionLog rows |
 | CON-REG-03 | Synthetic dataset usage | ✅ | Seed data in `db/seed.js` is synthetic |
 | CON-ENV-01 | Enterprise Architect UML | ✅ | All diagrams in READ document created with EA |
 | CON-ENV-02 | BDD/TDD methodology | ✅ | Cucumber (13 BDD scenarios) + Jest (18 unit) + Supertest (6 functional) |
@@ -1029,11 +1029,11 @@ FirstSaaSPrototype/
 
 | Use Case | Main Flow | Alternative / Error Flows |
 |---|---|---|
-| UC1 Register New Lead | ✅ | Duplicate email → 400 ✅ · Missing fields → HTML5 required ✅ · Link to existing profile on duplicate ❌ |
+| UC1 Register New Lead | ✅ | Duplicate email → 409 ✅ · Missing fields → HTML5 required ✅ · Link to existing profile on duplicate ✅ |
 | UC2 Calculate Lead Score | ✅ | Missing metrics default to 0 ✅ · No explicit "invalid metrics" warning ⚠️ |
 | UC3 Manage Sales Pipeline | ✅ | Lead not found → 404 ✅ · Insufficient role → 403 ✅ |
-| UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ❌ |
-| UC5 Manage RBAC & Users | ✅ | Admin removing own role is not blocked ❌ |
+| UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ✅ |
+| UC5 Manage RBAC & Users | ✅ | Admin removing own role blocked → 403 ✅ |
 | UC6 Generate Support Ticket | ✅ | DB timeout local caching ❌ |
 | UC7 Manage Ticket Status | ✅ | Ticket not found → 404 ✅ · DB failure → error returned ✅ |
 
@@ -1041,9 +1041,9 @@ FirstSaaSPrototype/
 
 | Screen | Status | Gap |
 |---|---|---|
-| 3.8.1 Main Operational Dashboard | ✅ | KPI cards not clickable to navigate to detail lists |
-| 3.8.2 Lead Registration & Validation Form | ⚠️ | After successful save, newly calculated score is not displayed inline |
-| 3.8.3 Unified Customer Profile & Support Hub | ⚠️ | No "Generate Ticket" button on profile page — must go to `/tickets` separately |
+| 3.8.1 Main Operational Dashboard | ✅ | KPI cards navigate to `/leads` or `/tickets` on click |
+| 3.8.2 Lead Registration & Validation Form | ✅ | Score displayed inline in green banner after successful save |
+| 3.8.3 Unified Customer Profile & Support Hub | ✅ | Inline "Generate Ticket" form on lead profile for support/admin |
 
 ---
 
@@ -1054,28 +1054,28 @@ FirstSaaSPrototype/
 
 ### High Priority
 
-| # | Item | Requirement | File(s) to change |
-|---|---|---|---|
-| B-01 | After duplicate email error, show a link to the existing lead's profile | UC1 Alt Flow, Scenario 3 Step 7 | `frontend/src/pages/LeadPage.jsx`, `frontend/src/components/LeadForm.jsx` — capture the error response's `lead_id` and render a "View existing profile →" link |
-| B-02 | GDPR Right to be Forgotten — delete all personal data for a lead | CON-REG-02 | Add `DELETE /api/leads/:id/personal-data` endpoint in `backend/src/routes/index.js`; wipe email + contact_name from Lead and purge InteractionLog rows |
-| B-03 | Block admin from removing their own admin role | UC5 Alt Flow | `backend/src/controllers/userController.js` — check `req.user.user_id === req.params.id` and reject if new role is not admin |
+| # | Status | Item | Requirement | File(s) to change |
+|---|---|---|---|---|
+| B-01 | ✅ | After duplicate email error, show a link to the existing lead's profile | UC1 Alt Flow, Scenario 3 Step 7 | Backend returns `lead_id` in 409 response; `LeadPage` shows "View existing profile →" button on DUPLICATE_EMAIL |
+| B-02 | ✅ | GDPR Right to be Forgotten — delete all personal data for a lead | CON-REG-02 | `DELETE /api/leads/:id/personal-data` (admin only) — anonymises email/name, purges InteractionLog rows |
+| B-03 | ✅ | Block admin from removing their own admin role | UC5 Alt Flow | `userController.updateRole` checks `req.user.user_id === req.params.id` and returns 403 if downgrade attempted |
 
 ### Medium Priority
 
-| # | Item | Requirement | File(s) to change |
-|---|---|---|---|
-| B-04 | Dashboard KPI cards navigate to detail lists on click | UC4 Alt Flow, Section 3.8.1 | `frontend/src/pages/DashboardPage.jsx` — wrap `StatCard` in a `<Link>` to `/leads` or `/tickets` |
-| B-05 | Show newly calculated priority score inline after lead save | Section 3.8.2 | `frontend/src/pages/LeadPage.jsx` — after `handleCreate`, display score from the response before resetting the form |
-| B-06 | "Generate Ticket" button directly on lead profile page | Section 3.8.3 | `frontend/src/pages/LeadProfilePage.jsx` — add inline ticket creation form for support/admin roles |
-| B-07 | KVKK right-to-erasure endpoint for user account data | CON-REG-01 | Add `DELETE /api/users/:id/personal-data` (admin only); anonymise `user_email` and `full_name` fields |
+| # | Status | Item | Requirement | File(s) to change |
+|---|---|---|---|---|
+| B-04 | ✅ | Dashboard KPI cards navigate to detail lists on click | UC4 Alt Flow, Section 3.8.1 | `StatCard` accepts `onClick` prop; Active Leads → `/leads`, Open Tickets → `/tickets`, Revenue → `/leads` |
+| B-05 | ✅ | Show newly calculated priority score inline after lead save | Section 3.8.2 | `handleCreate` captures `priority_score` from POST response and renders a green score banner |
+| B-06 | ✅ | "Generate Ticket" button directly on lead profile page | Section 3.8.3 | `LeadProfilePage` shows inline ticket form (description + priority dropdown) for support/admin roles |
+| B-07 | ✅ | KVKK right-to-erasure endpoint for user account data | CON-REG-01 | `DELETE /api/users/:id/personal-data` (admin only) — anonymises `user_email` and `full_name` |
 
 ### Low Priority
 
-| # | Item | Requirement | Notes |
-|---|---|---|---|
-| B-08 | Local caching of ticket on DB timeout | UC6 Alt Flow | Browser `localStorage` fallback; very edge case for academic scope |
-| B-09 | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | Use `autocannon` or `k6`; document results in `test_results/` |
-| B-10 | Verify 100k record query performance | NFR-ST-13 | Insert synthetic records via script; measure `GET /api/leads` response time |
+| # | Status | Item | Requirement | Notes |
+|---|---|---|---|---|
+| B-08 | 🔲 | Local caching of ticket on DB timeout | UC6 Alt Flow | Browser `localStorage` fallback; very edge case for academic scope |
+| B-09 | 🔲 | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | Use `autocannon` or `k6`; document results in `test_results/` |
+| B-10 | 🔲 | Verify 100k record query performance | NFR-ST-13 | Insert synthetic records via script; measure `GET /api/leads` response time |
 
 ---
 
