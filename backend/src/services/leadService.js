@@ -23,6 +23,7 @@ async function createLead({ email, contact_name, metrics, deal_value, campaign_i
   if (existing) {
     const err = new Error('Duplicate email');
     err.code = 'DUPLICATE_EMAIL';
+    err.lead_id = existing.lead_id;
     throw err;
   }
 
@@ -70,6 +71,15 @@ async function deleteLead(id) {
   }
 }
 
+async function erasePersonalData(id) {
+  const erased = await leadRepository.erasePersonalData(id);
+  if (!erased) {
+    const err = new Error('Lead not found');
+    err.code = 'LEAD_NOT_FOUND';
+    throw err;
+  }
+}
+
 async function getLogs(leadId) {
   await getById(leadId);
   return logRepository.findByLead(leadId);
@@ -80,4 +90,4 @@ async function addLog({ leadId, note_text, user_id }) {
   return logRepository.create({ note_text, lead_id: leadId, user_id });
 }
 
-module.exports = { getAll, getById, createLead, updateLead, deleteLead, getLogs, addLog };
+module.exports = { getAll, getById, createLead, updateLead, deleteLead, erasePersonalData, getLogs, addLog };
