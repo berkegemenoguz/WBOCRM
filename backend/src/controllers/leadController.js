@@ -1,14 +1,34 @@
 const leadService = require('../services/leadService');
 
-async function getAll(_req, res) {
+// Mask PII fields for roles without full data access (GDPR/KVKK — NFR-ST-07)
+function maskEmail(email) {
+  const [local, domain] = email.split('@');
+  return `${local[0]}***@${domain}`;
+}
+
+function maskName(name) {
+  const parts = name.trim().split(' ');
+  return parts.map((p, i) => i === 0 ? `${p[0].toUpperCase()}.` : `${p[0].toUpperCase()}***`).join(' ');
+}
+
+function applyMask(lead) {
+  return { ...lead, email: maskEmail(lead.email), contact_name: maskName(lead.contact_name) };
+}
+
+function maybeApplyMask(req, data) {
+  if (req.user?.rbac_role !== 'support') return data;
+  return Array.isArray(data) ? data.map(applyMask) : applyMask(data);
+}
+
+async function getAll(req, res) {
   const leads = await leadService.getAll();
-  return res.status(200).json(leads);
+  return res.status(200).json(maybeApplyMask(req, leads));
 }
 
 async function getById(req, res) {
   try {
     const lead = await leadService.getById(req.params.id);
-    return res.status(200).json(lead);
+    return res.status(200).json(maybeApplyMask(req, lead));
   } catch (err) {
     if (err.code === 'LEAD_NOT_FOUND') return res.status(404).json({ error: err.code, message: err.message });
     return res.status(500).json({ error: 'SERVER_ERROR', message: 'Internal server error' });
