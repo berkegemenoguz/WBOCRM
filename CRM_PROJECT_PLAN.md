@@ -27,6 +27,8 @@
 17. [.gitignore Rules](#17-gitignore-rules)
 18. [Deployment Guide](#18-deployment-guide)
 19. [Submission Checklist](#19-submission-checklist)
+20. [READ Compliance Status](#20-read-compliance-status)
+21. [Open Backlog](#21-open-backlog)
 
 ---
 
@@ -130,6 +132,8 @@ Rules:
 | Phase 7 | Tests (BDD/TDD) | ✅ |
 | Phase 8 | Cloud Deployment | ✅ |
 | Phase 9 | Documentation & Submission | ✅ |
+| Phase 10 | READ Compliance Fixes (NFR gaps) | ✅ |
+| **Backlog** | **Remaining open items — see Section 21** | **🔲** |
 
 ---
 
@@ -956,6 +960,122 @@ FirstSaaSPrototype/
 - [ ] Backend live on Render
 - [ ] Test evidence in `test_results/`
 - [ ] At least 2 UML diagrams in `architecture_description.pdf`
+
+---
+
+---
+
+## 20. READ Compliance Status
+
+> Cross-reference of every requirement in `CRM_System_READ3.pdf` against the actual implementation.
+> Last updated: May 8, 2026.
+
+### Functional Requirements
+
+| ID | Name | Status | Notes |
+|---|---|---|---|
+| FR-ST-01 | Lead Record Creation | ✅ | `POST /api/leads` — requires email + contact_name |
+| FR-UC-02 | Dynamic Lead Scoring | ✅ | `scoringService.calculateScore()` called on create and metric update |
+| FR-SC-03 | Lead Prioritization Display | ✅ | `GET /api/leads` returns `ORDER BY priority_score DESC`; `PriorityTable` renders top-5 on dashboard |
+| FR-ST-04 | Interaction Logging | ✅ | `POST /api/leads/:id/logs`; timeline shown on `LeadProfilePage` |
+| FR-UC-05 | Pipeline Stage Progression | ✅ | `PUT /api/leads/:id` with `pipeline_stage`; dropdown on `LeadProfilePage` |
+| FR-SC-06 | Lead Assignment | ✅ | Admin can reassign lead to any sales user via `LeadProfilePage` dropdown |
+| FR-ST-07 | Support Ticket Generation | ✅ | `POST /api/tickets` — `lead_id` required |
+| FR-UC-08 | Ticket Status Management | ✅ | `PUT /api/tickets/:id` — updates status + priority |
+| FR-ST-09 | Centralized Ticket Display | ✅ | `TicketPage` shows all tickets in a single table |
+| FR-SC-10 | Ticket Priority Tagging | ✅ | `priority_level` CHECK constraint: Low / Medium / High |
+| FR-ST-11 | Active Lead Visualization | ✅ | `GET /api/dashboard` returns `activeLeads` count (excludes Closed) |
+| FR-UC-12 | Pending Ticket Visualization | ✅ | `GET /api/dashboard` returns `openTickets` count (excludes Resolved/Closed) |
+| FR-SC-13 | Marketing Campaign Linking | ✅ | `campaign_id` column in Lead table; input field in `LeadForm` |
+| FR-ST-14 | Monthly Revenue Tracking | ✅ | `monthlyRevenue()` sums `deal_value` of Closed leads in current month |
+| FR-DOC-15 | Data Export Functionality | ✅ | `GET /api/leads/export/csv` — sales + admin roles only |
+
+### Non-Functional Requirements
+
+| ID | Name | Status | Implementation |
+|---|---|---|---|
+| NFR-ST-01 | Rapid Lead Entry ≤ 3 clicks | ✅ | NavBar → Leads → "+ New Lead" → Save |
+| NFR-ST-02 | Mobile 360px viewport | ✅ | `src/index.css` with 640px breakpoint; `profile-layout`, `lead-form-grid`, `table-scroll` classes; `min-width` removed from `index.html` |
+| NFR-ST-03 | Ticket search ≤ 5 seconds | ✅ | Real-time `<input type="search">` on `TicketPage`; filters description, priority, status, lead_id client-side |
+| NFR-ST-04 | 99.5% uptime (08:00–20:00) | ⚠️ | Depends on Render SLA — not a code concern |
+| NFR-ST-05 | Concurrent collision prevention | ✅ | Optimistic locking in `ticketService.updateTicket()` via `updated_at` timestamp comparison; returns `CONFLICT` error |
+| NFR-ST-06 | Release downtime ≤ 15 min | ⚠️ | Vercel zero-downtime deploy; Render rolling restart — infrastructure concern |
+| NFR-ST-07 | GDPR/KVKK PII masking | ✅ | `leadController` and `dashboardController` apply `maskEmail()` and `maskName()` for `support` role: `a***@domain`, `A. J***` |
+| NFR-ST-08 | Secure authentication | ✅ | bcrypt saltRounds=12; email UNIQUE + max 48 chars; JWT 30 min expiry |
+| NFR-ST-09 | Idle session timeout 30 min | ✅ | `AuthContext` listens to `mousemove`, `mousedown`, `keydown`, `scroll`, `touchstart`; calls `logout()` after 30 min of no activity |
+| NFR-ST-10 | Scoring ≤ 500ms | ✅ | `calculateScore()` is pure synchronous math — runs in < 1ms |
+| NFR-ST-11 | API response ≤ 200ms | ✅ | All queries are simple indexed PK/FK lookups on PostgreSQL |
+| NFR-ST-12 | Dashboard 2s auto-refresh | ✅ | `setInterval(fetchDashboard, 2000)` in `DashboardPage` |
+| NFR-ST-13 | 100k record capacity | ⚠️ | PostgreSQL supports this; no load test conducted yet |
+| NFR-ST-14 | 50 req/sec throughput | ⚠️ | No load test conducted yet |
+| NFR-ST-15 | Auto-archive tickets > 365 days | ✅ | `archiveService.js` runs on startup + daily; moves Resolved/Closed tickets to `ArchivedTicket` table; `POST /api/tickets/archive` for manual trigger (admin only) |
+
+### Constraints
+
+| ID | Name | Status | Notes |
+|---|---|---|---|
+| CON-TECH-01 | Java Spring Boot backend | ⚠️ | Using **Node.js + Express** — known deviation; document updated accordingly |
+| CON-TECH-02 | PostgreSQL database | ✅ | Render managed PostgreSQL |
+| CON-TECH-03 | React.js SPA frontend | ✅ | React 18 + Vite |
+| CON-TECH-04 | Heroku cloud hosting | ⚠️ | Using **Render** (backend + DB) + **Vercel** (frontend) — known deviation; document updated |
+| CON-REG-01 | KVKK data processing compliance | ⚠️ | PII masking implemented (NFR-ST-07); no explicit data deletion / right-to-erasure endpoint |
+| CON-REG-02 | GDPR Right to be Forgotten | ❌ | No marketing consent mechanism; no "delete all personal data" endpoint |
+| CON-REG-03 | Synthetic dataset usage | ✅ | Seed data in `db/seed.js` is synthetic |
+| CON-ENV-01 | Enterprise Architect UML | ✅ | All diagrams in READ document created with EA |
+| CON-ENV-02 | BDD/TDD methodology | ✅ | Cucumber (13 BDD scenarios) + Jest (18 unit) + Supertest (6 functional) |
+| CON-ENV-03 | GitHub version control | ✅ | `https://github.com/berkegemenoguz/WBOCRM` |
+
+### Use Case Coverage
+
+| Use Case | Main Flow | Alternative / Error Flows |
+|---|---|---|
+| UC1 Register New Lead | ✅ | Duplicate email → 400 ✅ · Missing fields → HTML5 required ✅ · Link to existing profile on duplicate ❌ |
+| UC2 Calculate Lead Score | ✅ | Missing metrics default to 0 ✅ · No explicit "invalid metrics" warning ⚠️ |
+| UC3 Manage Sales Pipeline | ✅ | Lead not found → 404 ✅ · Insufficient role → 403 ✅ |
+| UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ❌ |
+| UC5 Manage RBAC & Users | ✅ | Admin removing own role is not blocked ❌ |
+| UC6 Generate Support Ticket | ✅ | DB timeout local caching ❌ |
+| UC7 Manage Ticket Status | ✅ | Ticket not found → 404 ✅ · DB failure → error returned ✅ |
+
+### UI Mockup Coverage (Section 3.8)
+
+| Screen | Status | Gap |
+|---|---|---|
+| 3.8.1 Main Operational Dashboard | ✅ | KPI cards not clickable to navigate to detail lists |
+| 3.8.2 Lead Registration & Validation Form | ⚠️ | After successful save, newly calculated score is not displayed inline |
+| 3.8.3 Unified Customer Profile & Support Hub | ⚠️ | No "Generate Ticket" button on profile page — must go to `/tickets` separately |
+
+---
+
+## 21. Open Backlog
+
+> Items identified during READ compliance audit (May 8, 2026) that are not yet implemented.
+> Prioritized: **High** = breaks a documented requirement · **Medium** = partial implementation · **Low** = edge case / nice-to-have
+
+### High Priority
+
+| # | Item | Requirement | File(s) to change |
+|---|---|---|---|
+| B-01 | After duplicate email error, show a link to the existing lead's profile | UC1 Alt Flow, Scenario 3 Step 7 | `frontend/src/pages/LeadPage.jsx`, `frontend/src/components/LeadForm.jsx` — capture the error response's `lead_id` and render a "View existing profile →" link |
+| B-02 | GDPR Right to be Forgotten — delete all personal data for a lead | CON-REG-02 | Add `DELETE /api/leads/:id/personal-data` endpoint in `backend/src/routes/index.js`; wipe email + contact_name from Lead and purge InteractionLog rows |
+| B-03 | Block admin from removing their own admin role | UC5 Alt Flow | `backend/src/controllers/userController.js` — check `req.user.user_id === req.params.id` and reject if new role is not admin |
+
+### Medium Priority
+
+| # | Item | Requirement | File(s) to change |
+|---|---|---|---|
+| B-04 | Dashboard KPI cards navigate to detail lists on click | UC4 Alt Flow, Section 3.8.1 | `frontend/src/pages/DashboardPage.jsx` — wrap `StatCard` in a `<Link>` to `/leads` or `/tickets` |
+| B-05 | Show newly calculated priority score inline after lead save | Section 3.8.2 | `frontend/src/pages/LeadPage.jsx` — after `handleCreate`, display score from the response before resetting the form |
+| B-06 | "Generate Ticket" button directly on lead profile page | Section 3.8.3 | `frontend/src/pages/LeadProfilePage.jsx` — add inline ticket creation form for support/admin roles |
+| B-07 | KVKK right-to-erasure endpoint for user account data | CON-REG-01 | Add `DELETE /api/users/:id/personal-data` (admin only); anonymise `user_email` and `full_name` fields |
+
+### Low Priority
+
+| # | Item | Requirement | Notes |
+|---|---|---|---|
+| B-08 | Local caching of ticket on DB timeout | UC6 Alt Flow | Browser `localStorage` fallback; very edge case for academic scope |
+| B-09 | Load test to verify 50 req/sec ≤ 5% error rate | NFR-ST-14 | Use `autocannon` or `k6`; document results in `test_results/` |
+| B-10 | Verify 100k record query performance | NFR-ST-13 | Insert synthetic records via script; measure `GET /api/leads` response time |
 
 ---
 
