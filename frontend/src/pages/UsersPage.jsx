@@ -33,7 +33,7 @@ export default function UsersPage() {
   async function handleErase(userId) {
     if (!window.confirm('This will permanently erase the personal data of this user. Continue?')) return;
     try {
-      await api.delete(`/users/${userId}/erase`);
+      await api.delete(`/users/${userId}/personal-data`);
       fetchUsers();
     } catch (err) {
       setError(err.response?.data?.message || 'Erase failed');

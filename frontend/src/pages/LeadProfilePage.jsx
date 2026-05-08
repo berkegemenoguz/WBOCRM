@@ -81,7 +81,7 @@ export default function LeadProfilePage() {
   async function handleErasePII() {
     if (!window.confirm('This will permanently erase all personal data for this lead. Continue?')) return;
     try {
-      await api.delete(`/leads/${id}/erase`);
+      await api.delete(`/leads/${id}/personal-data`);
       navigate('/leads');
     } catch (err) {
       setError(err.response?.data?.message || 'Erase failed');
