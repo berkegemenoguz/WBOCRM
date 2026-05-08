@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const ROLES = ['sales', 'support', 'admin'];
 
 export default function UsersPage() {
+  const { user: me } = useAuth();
+  const isAdmin = me?.rbac_role === 'admin';
   const [users, setUsers]   = useState([]);
   const [error, setError]   = useState('');
 
@@ -27,6 +30,16 @@ export default function UsersPage() {
     }
   }
 
+  async function handleErase(userId) {
+    if (!window.confirm('This will permanently erase the personal data of this user. Continue?')) return;
+    try {
+      await api.delete(`/users/${userId}/erase`);
+      fetchUsers();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erase failed');
+    }
+  }
+
   return (
     <div style={styles.page}>
       <h2 style={styles.heading}>User Management</h2>
@@ -35,7 +48,7 @@ export default function UsersPage() {
       <table style={styles.table}>
         <thead>
           <tr>
-            {['#', 'Email', 'Role', 'Change Role'].map(h => (
+            {['#', 'Full Name', 'Email', 'Role', 'Change Role', ...(isAdmin ? ['Actions'] : [])].map(h => (
               <th key={h} style={styles.th}>{h}</th>
             ))}
           </tr>
@@ -44,6 +57,7 @@ export default function UsersPage() {
           {users.map((u, i) => (
             <tr key={u.user_id} style={i % 2 === 0 ? styles.rowEven : styles.rowOdd}>
               <td style={styles.td}>{u.user_id}</td>
+              <td style={styles.td}>{u.full_name || '—'}</td>
               <td style={styles.td}>{u.user_email}</td>
               <td style={styles.td}>
                 <span style={{ ...styles.badge, background: ROLE_COLORS[u.rbac_role] || '#94a3b8' }}>
@@ -59,10 +73,15 @@ export default function UsersPage() {
                   {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                 </select>
               </td>
+              {isAdmin && (
+                <td style={styles.td}>
+                  <button onClick={() => handleErase(u.user_id)} style={styles.eraseBtn}>Erase Data</button>
+                </td>
+              )}
             </tr>
           ))}
           {users.length === 0 && (
-            <tr><td colSpan={4} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No users</td></tr>
+            <tr><td colSpan={isAdmin ? 6 : 5} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No users</td></tr>
           )}
         </tbody>
       </table>
@@ -83,5 +102,6 @@ const styles = {
   rowEven: { background:'#fff' },
   rowOdd:  { background:'#f8fafc' },
   badge:   { color:'#fff', padding:'2px 8px', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'600' },
-  select:  { padding:'4px 8px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.85rem', cursor:'pointer' },
+  select:   { padding:'4px 8px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.85rem', cursor:'pointer' },
+  eraseBtn: { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
 };
