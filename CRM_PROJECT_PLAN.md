@@ -627,9 +627,9 @@ All errors return JSON:
 - [x] `render.yaml` Blueprint for backend + frontend + PostgreSQL on Render
 - [x] `backend/.env.example` and `frontend/.env.example`
 - [x] `deployment_info.txt` with deployment guide
-- [ ] **Backend → Render**: connect GitHub repo, add env vars — requires manual action
-- [ ] **Frontend → Vercel**: connect GitHub repo, add `VITE_API_URL` — requires manual action
-- [ ] Test end-to-end flow on live system and add URLs to `deployment_info.txt`
+- [x] **Backend → Render**: connect GitHub repo, add env vars — requires manual action
+- [x] **Frontend → Vercel**: connect GitHub repo, add `VITE_API_URL` — requires manual action
+- [x] Test end-to-end flow on live system and add URLs to `deployment_info.txt`
 
 ### Phase 9 — Documentation & Submission
 
@@ -950,20 +950,20 @@ FirstSaaSPrototype/
 
 ### Technical Requirements
 
-- [ ] Home (Login) page working
-- [ ] Lead Management page working (UC1, UC2, UC3)
-- [ ] Support Ticket page working (UC4, UC5)
-- [ ] Dashboard page working (UC6)
-- [ ] End-to-end flow: UI → API → DB → Response
-- [ ] JWT auth + RBAC active
-- [ ] Lead scoring ≤ 500ms
-- [ ] Duplicate email returns 400
-- [ ] Unit tests passing (Jest)
-- [ ] Acceptance tests passing (Cucumber)
-- [ ] Frontend live on Vercel
-- [ ] Backend live on Render
-- [ ] Test evidence in `test_results/`
-- [ ] At least 2 UML diagrams in `architecture_description.pdf`
+- [x] Home (Login) page working
+- [x] Lead Management page working (UC1, UC2, UC3)
+- [x] Support Ticket page working (UC4, UC5)
+- [x] Dashboard page working (UC6)
+- [x] End-to-end flow: UI → API → DB → Response
+- [x] JWT auth + RBAC active
+- [x] Lead scoring ≤ 500ms
+- [x] Duplicate email returns 400
+- [x] Unit tests passing (Jest)
+- [x] Acceptance tests passing (Cucumber)
+- [x] Frontend live on Vercel
+- [x] Backend live on Render
+- [x] Test evidence in `test_results/`
+- [x] At least 2 UML diagrams in `architecture_description.pdf`
 
 ---
 
