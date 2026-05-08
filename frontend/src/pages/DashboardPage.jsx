@@ -1,12 +1,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import PriorityTable from '../components/PriorityTable';
 
 const REFRESH_INTERVAL_MS = 2000;
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isSupport = user?.rbac_role === 'support';
   const [data, setData]   = useState(null);
   const [error, setError] = useState('');
   const timerRef = useRef(null);
@@ -35,7 +38,9 @@ export default function DashboardPage() {
       <div style={styles.stats}>
         <StatCard label="Active Leads"    value={data.activeLeads}                                    color="#3b82f6" onClick={() => navigate('/leads')} />
         <StatCard label="Open Tickets"    value={data.openTickets}                                    color="#f59e0b" onClick={() => navigate('/tickets')} />
-        <StatCard label="Monthly Revenue" value={`$${Number(data.monthlyRevenue).toLocaleString()}K`} color="#10b981" onClick={() => navigate('/leads')} />
+        {!isSupport && (
+          <StatCard label="Monthly Revenue" value={`$${Number(data.monthlyRevenue).toLocaleString()}K`} color="#10b981" onClick={() => navigate('/leads')} />
+        )}
       </div>
       <h3 style={styles.sub}>Top 5 Leads by Score</h3>
       <PriorityTable leads={data.top5} />
