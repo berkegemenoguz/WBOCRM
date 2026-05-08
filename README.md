@@ -218,8 +218,10 @@ The `updated_at` field is used for optimistic locking. If it does not match the 
 | Method | Endpoint | Auth | Roles | Description |
 |---|---|---|---|---|
 | `GET` | `/api/dashboard` | ✅ | all | Active lead count, open ticket count, top-5 leads by score |
-| `GET` | `/api/users` | ✅ | admin | List all users |
-| `PUT` | `/api/users/:id/role` | ✅ | admin | Assign a new RBAC role to a user |
+| `GET` | `/api/users` | ✅ | admin | List all users (includes `full_name`) |
+| `PUT` | `/api/users/:id/role` | ✅ | admin | Assign a new RBAC role; blocks demotion of the last admin (409) |
+| `DELETE` | `/api/leads/:id/personal-data` | ✅ | admin | Erase lead PII — anonymises email/name, purges interaction logs (GDPR) |
+| `DELETE` | `/api/users/:id/personal-data` | ✅ | admin | Erase user account PII — anonymises email and full_name (KVKK) |
 
 ### HTTP Status Codes
 
@@ -231,7 +233,7 @@ The `updated_at` field is used for optimistic locking. If it does not match the 
 | `401` | Missing or invalid JWT token |
 | `403` | Valid token, insufficient role |
 | `404` | Entity not found |
-| `409` | Concurrent edit conflict (`updated_at` mismatch) |
+| `409` | Concurrent edit conflict (`updated_at` mismatch) or business rule violation (e.g. demoting last admin) |
 | `500` | Unhandled server error |
 
 ### Error Response Shape
@@ -607,8 +609,8 @@ The tables below map each documented requirement to the exact location in the ap
 | UC-1 | Register new lead | ✅ | `/leads` → **+ New Lead** → submit; try a duplicate email — error shows link to existing profile |
 | UC-2 | Calculate lead score | ✅ | Create a lead with varying metric values — score shown in green banner and lead table |
 | UC-3 | Manage sales pipeline | ✅ | Lead profile (sales/admin) → change stage dropdown; invalid role → `403` |
-| UC-4 | View operational dashboard | ✅ | `/dashboard` — KPI cards are clickable and navigate to the relevant list |
-| UC-5 | Manage RBAC & users | ✅ | `/users` (admin) → change a user's role; trying to remove own admin role returns an error |
+| UC-4 | View operational dashboard | ✅ | `/dashboard` — KPI cards clickable; Monthly Revenue card hidden for support role (sales-only metric) |
+| UC-5 | Manage RBAC & users | ✅ | `/users` (admin) → change a user's role; removing own admin role → error; demoting last admin in system → 409 blocked |
 | UC-6 | Generate support ticket | ✅ | Lead profile → **+ Generate Ticket**; if the server is unreachable the draft is saved to `localStorage` |
 | UC-7 | Manage ticket status | ✅ | `/tickets` → **Edit** → update status; concurrent edit from another tab triggers conflict warning |
 
@@ -616,7 +618,7 @@ The tables below map each documented requirement to the exact location in the ap
 
 | ID | Requirement | Status | Where to verify |
 |---|---|:---:|---|
-| CON-REG-01 | KVKK right-to-erasure (users) | ✅ | `DELETE /api/users/:id/personal-data` (admin) — anonymises `user_email` and `full_name` |
-| CON-REG-02 | GDPR right to be forgotten (leads) | ✅ | `DELETE /api/leads/:id/personal-data` (admin) — anonymises email/name, purges interaction logs |
+| CON-REG-01 | KVKK right-to-erasure (users) | ✅ | `/users` (admin) → **Erase Data** button per row → confirmation dialog → `DELETE /api/users/:id/personal-data` |
+| CON-REG-02 | GDPR right to be forgotten (leads) | ✅ | Lead profile (admin) → **Erase Personal Data** button (top-right) → confirmation dialog → `DELETE /api/leads/:id/personal-data` |
 | CON-REG-03 | Synthetic dataset | ✅ | `npm run db:seed` — all seed records are fictitious |
 | CON-ENV-02 | BDD / TDD test coverage | ✅ | `npm run test:unit` · `npm run test:functional` · `npm run test:bdd` |

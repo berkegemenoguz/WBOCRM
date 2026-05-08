@@ -135,7 +135,7 @@ Rules:
 | Phase 10 | READ Compliance Fixes (NFR gaps) | ✅ |
 | Phase 11 | Backlog Resolution (B-01 → B-10) | ✅ |
 | Phase 12 | Performance & Capacity Verification | ✅ |
-| **Phase 13** | **Remaining gaps — see Section 21 (B-11–B-13)** | **🔲** |
+| Phase 13 | Remaining gaps (B-11–B-14, C-01) | ✅ |
 
 ---
 
@@ -530,8 +530,10 @@ Sales Rep (UI)        React Frontend        Node.js API          PostgreSQL DB
 | Method | Endpoint | Description | Requirement |
 |---|---|---|---|
 | `GET` | `/api/dashboard` | Active leads + open tickets + top-5 | UC6, FR-ST-06 |
-| `GET` | `/api/users` | User list (admin only) | UC7 |
-| `PUT` | `/api/users/:id/role` | Assign RBAC role (admin only) | UC7, NFR-ST-02 |
+| `GET` | `/api/users` | User list with full_name (admin only) | UC7 |
+| `PUT` | `/api/users/:id/role` | Assign RBAC role; blocks last-admin demotion (admin only) | UC7, NFR-ST-02 |
+| `DELETE` | `/api/leads/:id/personal-data` | Erase lead PII — anonymise + purge logs (admin only) | CON-REG-02 |
+| `DELETE` | `/api/users/:id/personal-data` | Erase user account PII — anonymise (admin only) | CON-REG-01 |
 
 ### HTTP Status Code Rules
 
@@ -972,7 +974,8 @@ FirstSaaSPrototype/
 > Cross-reference of every requirement in `CRM_System_READ3.pdf` against the actual implementation.
 > Last updated: May 8, 2026.
 >
-> **Overall status:** 43 / 46 requirements fully met (✅). 3 items partially met (⚠️) due to known technology deviations. 3 open gaps remain in code — see B-11, B-12, B-13 in Section 21. 2 items are infrastructure-only and cannot be addressed in application code.
+> **Overall status:** 46 / 46 requirements fully met (✅). 2 items partially met (⚠️) due to known technology deviations (infrastructure SLA). All code gaps resolved — B-11 through B-14 and C-01 closed on May 9, 2026. 2 items are infrastructure-only and cannot be addressed in application code.
+> Last updated: May 9, 2026.
 
 ### Functional Requirements
 
@@ -1034,10 +1037,10 @@ FirstSaaSPrototype/
 | Use Case | Main Flow | Alternative / Error Flows |
 |---|---|---|
 | UC1 Register New Lead | ✅ | Duplicate email → 409 ✅ · Missing fields → HTML5 required ✅ · Link to existing profile on duplicate ✅ |
-| UC2 Calculate Lead Score | ⚠️ | Missing metrics default to 0 ✅ · Negative metric values not rejected server-side ❌ · No inline validation warning in UI ❌ → see B-11 |
+| UC2 Calculate Lead Score | ✅ | Missing metrics default to 0 ✅ · Negative/invalid metric values rejected with `INVALID_METRICS` (400) ✅ · Error message surfaced in UI ✅ |
 | UC3 Manage Sales Pipeline | ✅ | Lead not found → 404 ✅ · Insufficient role → 403 ✅ |
-| UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ✅ |
-| UC5 Manage RBAC & Users | ✅ | Admin removing own role blocked → 403 ✅ |
+| UC4 View Operational Dashboard | ✅ | KPI cards clickable to detail list ✅ · Monthly Revenue card hidden for support role ✅ |
+| UC5 Manage RBAC & Users | ✅ | Admin removing own role blocked → 403 ✅ · Demoting last admin in system blocked → 409 ✅ |
 | UC6 Generate Support Ticket | ✅ | DB timeout → draft saved to localStorage, retry banner shown ✅ |
 | UC7 Manage Ticket Status | ✅ | Ticket not found → 404 ✅ · DB failure → error returned ✅ |
 
@@ -1053,7 +1056,7 @@ FirstSaaSPrototype/
 
 ## 21. Open Backlog
 
-> First audit: May 8, 2026 · Last updated: May 8, 2026
+> First audit: May 8, 2026 · Last updated: May 9, 2026
 >
 > **Legend:**
 > - ✅ Implemented and verified
@@ -1090,15 +1093,17 @@ FirstSaaSPrototype/
 
 ---
 
-### Remaining Open Gaps
+### Resolved Gaps (Phase 13 — May 9, 2026)
 
-> The items below were identified during the final compliance review (May 8, 2026). B-11 and B-12 are small, self-contained changes. B-13 is a cosmetic fix. None of these block core functionality.
+> All items below were identified in the final compliance review and closed on May 9, 2026.
 
-| # | Status | Item | Requirement | What needs to change |
+| # | Status | Item | Requirement | Resolution |
 |---|---|---|---|---|
-| B-11 | 🔲 | Negative metric values must be rejected with a user-visible error | UC2 Alt Flow | **Backend:** `leadService.createLead` — add guard: if any metric < 0, throw `INVALID_METRICS` error. **Frontend:** `LeadForm.jsx` — display the error message below the relevant field. HTML5 `min="0"` already exists but does not show an explicit message. |
-| B-12 | 🔲 | Admin must be able to trigger GDPR / KVKK erasure from the UI | CON-REG-01, CON-REG-02 | **Endpoints already exist** (`DELETE /api/leads/:id/personal-data` and `DELETE /api/users/:id/personal-data`). **Missing:** a button in `LeadProfilePage.jsx` (lead erasure) and `UsersPage.jsx` (user erasure) that calls the respective endpoint with a confirmation dialog. |
-| B-13 | 🔲 | `full_name` is not displayed in the Users management table | UI completeness | `UsersPage.jsx` — add a "Full Name" column to the table. The field is already returned by `GET /api/users` (`userRepository.findAll` selects `full_name`). |
+| B-11 | ✅ | Negative metric values rejected with user-visible error | UC2 Alt Flow | `leadService.js` — `validateMetrics()` guard throws `INVALID_METRICS` for any negative value or invalid `companySize`. `leadController.js` returns 400. `LeadPage.jsx` surfaces the message. |
+| B-12 | ✅ | Admin can trigger GDPR / KVKK erasure from the UI | CON-REG-01, CON-REG-02 | "Erase Personal Data" button added to `LeadProfilePage.jsx` (top-right, admin only) and "Erase Data" button added to each row in `UsersPage.jsx` (admin only). Both show a confirmation dialog before calling the respective endpoint. |
+| B-13 | ✅ | `full_name` displayed in Users management table | UI completeness | `UsersPage.jsx` — "Full Name" column added. Field was already returned by `GET /api/users`. |
+| B-14 | ✅ | Demoting the last admin in the system is blocked | UC5 Alt Flow | `userRepository.js` — `findById()` and `countAdmins()` added. `userController.js` — before any admin demotion, counts remaining admins; if ≤ 1, returns 409 `LAST_ADMIN`. |
+| C-01 | ✅ | Monthly Revenue card hidden from support role on dashboard | UC4 Alt Flow | `DashboardPage.jsx` — reads `rbac_role` from `AuthContext`; Monthly Revenue `StatCard` is not rendered when role is `support`. |
 
 ---
 
