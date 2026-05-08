@@ -18,6 +18,14 @@ async function create({ user_email, user_password, rbac_role, full_name }) {
   return rows[0];
 }
 
+async function findById(userId) {
+  const { rows } = await pool.query(
+    'SELECT user_id, user_email, rbac_role, full_name FROM UserAccount WHERE user_id = $1',
+    [userId]
+  );
+  return rows[0] || null;
+}
+
 async function findAll() {
   const { rows } = await pool.query(
     'SELECT user_id, user_email, rbac_role, full_name FROM UserAccount ORDER BY user_id'
@@ -34,6 +42,14 @@ async function updateRole(userId, rbac_role) {
   return rows[0] || null;
 }
 
+// Count users with admin role
+async function countAdmins() {
+  const { rows } = await pool.query(
+    "SELECT COUNT(*)::int AS cnt FROM UserAccount WHERE rbac_role = 'admin'"
+  );
+  return rows[0].cnt;
+}
+
 // Anonymise PII — KVKK right-to-erasure
 async function erasePersonalData(userId) {
   const { rowCount } = await pool.query(
@@ -43,4 +59,4 @@ async function erasePersonalData(userId) {
   return rowCount > 0;
 }
 
-module.exports = { findByEmail, create, findAll, updateRole, erasePersonalData };
+module.exports = { findByEmail, findById, create, findAll, updateRole, countAdmins, erasePersonalData };

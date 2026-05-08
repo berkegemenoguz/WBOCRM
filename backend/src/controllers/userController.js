@@ -18,6 +18,17 @@ async function updateRole(req, res) {
     return res.status(403).json({ error: 'SELF_ROLE_CHANGE', message: 'Admin cannot remove their own admin role' });
   }
 
+  // Prevent demoting the last admin — system must always have at least one
+  if (rbac_role !== 'admin') {
+    const target = await userRepository.findById(req.params.id);
+    if (target?.rbac_role === 'admin') {
+      const adminCount = await userRepository.countAdmins();
+      if (adminCount <= 1) {
+        return res.status(409).json({ error: 'LAST_ADMIN', message: 'Cannot remove the last admin. Assign another admin first.' });
+      }
+    }
+  }
+
   const user = await userRepository.updateRole(req.params.id, rbac_role);
   if (!user) return res.status(404).json({ error: 'USER_NOT_FOUND', message: 'User not found' });
 
