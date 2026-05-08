@@ -78,6 +78,16 @@ export default function LeadProfilePage() {
     }
   }
 
+  async function handleErasePII() {
+    if (!window.confirm('This will permanently erase all personal data for this lead. Continue?')) return;
+    try {
+      await api.delete(`/leads/${id}/erase`);
+      navigate('/leads');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erase failed');
+    }
+  }
+
   async function handleGenerateTicket(e) {
     e.preventDefault();
     if (!newTicket.description.trim()) return;
@@ -97,7 +107,12 @@ export default function LeadProfilePage() {
 
   return (
     <div style={styles.page}>
-      <button onClick={() => navigate('/leads')} style={styles.back}>← Back to Leads</button>
+      <div style={styles.topBar}>
+        <button onClick={() => navigate('/leads')} style={styles.back}>← Back to Leads</button>
+        {role === 'admin' && (
+          <button onClick={handleErasePII} style={styles.eraseBtn}>🗑 Erase Personal Data</button>
+        )}
+      </div>
 
       <div className="profile-layout">
 
@@ -243,7 +258,9 @@ function scoreColor(score) {
 
 const styles = {
   page:         { padding:'24px', maxWidth:'1100px', margin:'0 auto' },
-  back:         { background:'none', border:'none', color:'#3b82f6', cursor:'pointer', fontSize:'0.9rem', marginBottom:'16px', padding:0 },
+  topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' },
+  back:         { background:'none', border:'none', color:'#3b82f6', cursor:'pointer', fontSize:'0.9rem', padding:0 },
+  eraseBtn:     { background:'#fee2e2', color:'#b91c1c', border:'1px solid #fca5a5', borderRadius:'6px', padding:'6px 14px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
   layout:       {},
   card:         { background:'#fff', borderRadius:'12px', padding:'24px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
   name:         { margin:'0 0 4px', color:'#1e293b', fontSize:'1.3rem' },
