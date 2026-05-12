@@ -42,6 +42,10 @@ After(async () => {
     'bdd_dup@test.wbocrm',
     'bdd_score_high@test.wbocrm',
     'bdd_score_low@test.wbocrm',
+    'bdd_for_ticket@test.wbocrm',
+    'bdd_for_ticket2@test.wbocrm',
+    'existing@test.wbocrm',
+    'unique_bdd@test.wbocrm',
   ];
   if (sharedTicketId) {
     await pool.query('DELETE FROM SupportTicket WHERE ticket_id = $1', [sharedTicketId]);
@@ -113,6 +117,14 @@ Given('an existing support ticket', async () => {
 });
 
 // ── When ──────────────────────────────────────────────────────────
+When('I submit a new lead with email {string}', async (email) => {
+  lastResponse = await request(app)
+    .post('/api/leads')
+    .set('Authorization', `Bearer ${salesToken}`)
+    .send({ email, contact_name: 'BDD Lead', metrics: {} });
+  if (lastResponse.status === 201) sharedLeadId = lastResponse.body.lead_id;
+});
+
 When('I submit a new lead with email {string} and name {string}', async (email, name) => {
   lastResponse = await request(app)
     .post('/api/leads')
@@ -225,4 +237,88 @@ Then('leads should be ordered by priority_score descending', () => {
       `Score at index ${i - 1} (${scores[i - 1]}) < score at index ${i} (${scores[i]})`
     );
   }
+});
+
+// ── FR-ST-04 — Interaction Logging steps ─────────────────────────
+Given('I add an interaction note {string} to the lead', async (noteText) => {
+  lastResponse = await request(app)
+    .post(`/api/leads/${sharedLeadId}/logs`)
+    .set('Authorization', `Bearer ${salesToken}`)
+    .send({ note_text: noteText });
+});
+
+When('I add an interaction note {string} to the lead', async (noteText) => {
+  lastResponse = await request(app)
+    .post(`/api/leads/${sharedLeadId}/logs`)
+    .set('Authorization', `Bearer ${salesToken}`)
+    .send({ note_text: noteText });
+});
+
+When('I retrieve the interaction logs for the lead', async () => {
+  lastResponse = await request(app)
+    .get(`/api/leads/${sharedLeadId}/logs`)
+    .set('Authorization', `Bearer ${salesToken}`);
+});
+
+Then('the response should contain the note text {string}', (noteText) => {
+  assert.strictEqual(lastResponse.body.note_text, noteText);
+});
+
+Then('the logs should contain at least {int} entry', (minCount) => {
+  assert.ok(Array.isArray(lastResponse.body), 'Expected array of logs');
+  assert.ok(
+    lastResponse.body.length >= minCount,
+    `Expected at least ${minCount} log(s), got ${lastResponse.body.length}`
+  );
+});
+
+// ── FR-UC-05 — Pipeline Stage steps ─────────────────────────────
+When('I update the lead pipeline stage to {string}', async (stage) => {
+  lastResponse = await request(app)
+    .put(`/api/leads/${sharedLeadId}`)
+    .set('Authorization', `Bearer ${salesToken}`)
+    .send({ pipeline_stage: stage });
+});
+
+Then('the lead pipeline_stage should be {string}', (stage) => {
+  assert.strictEqual(lastResponse.body.pipeline_stage, stage);
+});
+
+// ── FR-ST-11/12/14 — Dashboard KPI steps ────────────────────────
+When('I request the dashboard', async () => {
+  lastResponse = await request(app)
+    .get('/api/dashboard')
+    .set('Authorization', `Bearer ${salesToken}`);
+});
+
+Then('the dashboard should contain {string}', (field) => {
+  assert.ok(
+    lastResponse.body.hasOwnProperty(field),
+    `Expected dashboard to contain "${field}"`
+  );
+});
+
+Then('the dashboard top5 should be an array', () => {
+  assert.ok(Array.isArray(lastResponse.body.top5), 'Expected top5 to be an array');
+});
+
+// ── FR-DOC-15 — CSV Export steps ────────────────────────────────
+When('I request the leads CSV export', async () => {
+  lastResponse = await request(app)
+    .get('/api/leads/export/csv')
+    .set('Authorization', `Bearer ${salesToken}`);
+});
+
+Then('the response content-type should be {string}', (contentType) => {
+  assert.ok(
+    lastResponse.headers['content-type'].includes(contentType),
+    `Expected content-type to include "${contentType}", got "${lastResponse.headers['content-type']}"`
+  );
+});
+
+Then('the CSV should contain the header {string}', (header) => {
+  assert.ok(
+    lastResponse.text.includes(header),
+    `Expected CSV to contain header "${header}"`
+  );
 });

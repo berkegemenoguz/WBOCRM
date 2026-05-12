@@ -55,9 +55,9 @@
 - Responsive layout, minimum viewport 360px
 
 ### Phase 7 – Testing
-- **18 unit tests** (Jest + mocked repositories): authService, scoringService, ticketService
-- **6 functional tests** (Jest + Supertest, live DB): lead CRUD, ticket update, auth 401/403
-- **13 BDD scenarios** (Cucumber): lead registration, duplicate email, ticket creation, auth flows, scoring
+- **38 unit tests** (Jest + mocked repositories): authService (6), scoringService (6), ticketService (6), leadService (12), dashboardController (6)
+- **15 functional tests** (Jest + Supertest, live DB): lead CRUD, interaction logging, pipeline stage, tickets, dashboard KPIs, CSV export, PII masking, auth 401/403
+- **20 BDD scenarios** (Cucumber): lead registration, duplicate email, ticket creation, auth flows, scoring, interaction logging, pipeline stage, dashboard KPIs, CSV export
 - All tests passing; results saved to `backend/test_results/`
 
 ### Phase 8 – Deployment Configuration
