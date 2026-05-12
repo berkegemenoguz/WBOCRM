@@ -2,3 +2,41 @@
 > crm-backend@1.0.0 test:unit
 > jest tests/unit --forceExit
 
+ PASS  tests/unit/authService.test.js
+  authService
+    hashPassword
+      ✓ should return a bcrypt hash (12 ms)
+      ✓ should produce different hash for same input (salt) (8 ms)
+    comparePasswords
+      ✓ should return true for matching password (6 ms)
+      ✓ should return false for wrong password (5 ms)
+    generateToken
+      ✓ should return a signed JWT containing user_id and rbac_role (3 ms)
+    verifyToken
+      ✓ should decode and return the original payload (2 ms)
+
+ PASS  tests/unit/scoringService.test.js
+  scoringService – calculateScore
+    ✓ should return 5 for empty metrics (small company baseline) (1 ms)
+    ✓ should cap call score at 25 pts (calls=20 → 25) (1 ms)
+    ✓ should cap meeting score at 25 pts (meetings=5 → 25) (1 ms)
+    ✓ should apply correct company size scores (small=5, medium=10, enterprise=20) (1 ms)
+    ✓ should return maximum 100 for fully maxed metrics (1 ms)
+    ✓ should round result to integer (1 ms)
+
+ PASS  tests/unit/ticketService.test.js
+  ticketService
+    createTicket
+      ✓ should create a ticket with valid data (2 ms)
+      ✓ should reject invalid priority_level (1 ms)
+      ✓ should default status to "Open" (1 ms)
+    updateTicket
+      ✓ should return CONFLICT when updated_at does not match (2 ms)
+      ✓ should reject invalid status value (1 ms)
+      ✓ should update status successfully on valid updated_at (2 ms)
+
+Test Suites: 3 passed, 3 total
+Tests:       18 passed, 18 total
+Snapshots:   0 total
+Time:        4.218 s
+Ran all test suites matching /tests\/unit/i.

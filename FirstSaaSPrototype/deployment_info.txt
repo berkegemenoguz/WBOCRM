@@ -46,8 +46,10 @@ Deployment Steps:
 4. Render reads render.yaml and provisions all three services
 5. After first deploy, run the schema:
    render run --service wbocrm-backend -- node src/db/init.js
-6. Optionally seed demo data:
-   render run --service wbocrm-backend -- node src/db/seed.js
+6. Seed demo data (choose one method):
+   a. CLI:  render run --service wbocrm-backend -- node src/db/seed.js
+   b. API:  POST https://wbocrm-backend.onrender.com/api/setup
+      (one-time endpoint that creates 3 users, 5 leads, 2 tickets)
 
 Notes:
 ------
@@ -57,3 +59,14 @@ Notes:
   and enables { ssl: { rejectUnauthorized: false } }.
 - JWT tokens expire after 30 minutes (see authService.js).
 - All CORS origins should be updated in src/app.js for the live URL.
+- The archive cron job starts automatically when the backend boots
+  (archiveService.scheduleArchiveJob). It runs daily and archives
+  resolved/closed tickets older than 365 days to ArchivedTicket table.
+- 30-minute idle session timeout is enforced on the frontend via
+  AuthContext (activity-based reset on mousemove/keydown/scroll).
+
+Seed Credentials:
+-----------------
+  Admin   : admin@wbocrm.com    / Admin123!
+  Sales   : sales@wbocrm.com    / Sales123!
+  Support : support@wbocrm.com  / Support123!

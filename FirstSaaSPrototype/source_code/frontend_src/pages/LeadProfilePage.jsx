@@ -18,8 +18,10 @@ export default function LeadProfilePage() {
   const [logs, setLogs]       = useState([]);
   const [tickets, setTickets] = useState([]);
   const [users, setUsers]     = useState([]);
-  const [note, setNote]       = useState('');
-  const [error, setError]     = useState('');
+  const [note, setNote]             = useState('');
+  const [error, setError]           = useState('');
+  const [newTicket, setNewTicket]   = useState({ description: '', priority_level: 'Medium' });
+  const [showTicketForm, setShowTicketForm] = useState(false);
 
   async function fetchAll() {
     try {
@@ -76,14 +78,43 @@ export default function LeadProfilePage() {
     }
   }
 
+  async function handleErasePII() {
+    if (!window.confirm('This will permanently erase all personal data for this lead. Continue?')) return;
+    try {
+      await api.delete(`/leads/${id}/personal-data`);
+      navigate('/leads');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erase failed');
+    }
+  }
+
+  async function handleGenerateTicket(e) {
+    e.preventDefault();
+    if (!newTicket.description.trim()) return;
+    try {
+      await api.post('/tickets', { ...newTicket, lead_id: Number(id) });
+      setNewTicket({ description: '', priority_level: 'Medium' });
+      setShowTicketForm(false);
+      const tRes = await api.get('/tickets');
+      setTickets(tRes.data.filter(t => String(t.lead_id) === String(id)));
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create ticket');
+    }
+  }
+
   if (error) return <div style={styles.page}><p style={styles.errorBanner}>{error}</p></div>;
   if (!lead) return <div style={styles.page}><p style={styles.loading}>Loading…</p></div>;
 
   return (
     <div style={styles.page}>
-      <button onClick={() => navigate('/leads')} style={styles.back}>← Back to Leads</button>
+      <div style={styles.topBar}>
+        <button onClick={() => navigate('/leads')} style={styles.back}>← Back to Leads</button>
+        {role === 'admin' && (
+          <button onClick={handleErasePII} style={styles.eraseBtn}>🗑 Erase Personal Data</button>
+        )}
+      </div>
 
-      <div style={styles.layout}>
+      <div className="profile-layout">
 
         {/* LEFT: Lead Static Info */}
         <div style={styles.card}>
@@ -172,7 +203,33 @@ export default function LeadProfilePage() {
           {/* Linked Support Tickets */}
           {(role === 'support' || role === 'admin') && (
             <div style={styles.section}>
-              <h3 style={styles.sectionTitle}>Support Tickets</h3>
+              <div style={styles.sectionHeader}>
+                <h3 style={styles.sectionTitle}>Support Tickets</h3>
+                <button onClick={() => setShowTicketForm(v => !v)} style={styles.genBtn}>
+                  {showTicketForm ? 'Cancel' : '+ Generate Ticket'}
+                </button>
+              </div>
+              {showTicketForm && (
+                <form onSubmit={handleGenerateTicket} style={styles.ticketForm}>
+                  <input
+                    value={newTicket.description}
+                    onChange={e => setNewTicket(t => ({ ...t, description: e.target.value }))}
+                    placeholder="Ticket description…"
+                    required
+                    style={styles.noteInput}
+                  />
+                  <select
+                    value={newTicket.priority_level}
+                    onChange={e => setNewTicket(t => ({ ...t, priority_level: e.target.value }))}
+                    style={styles.select}
+                  >
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                  </select>
+                  <button type="submit" style={styles.noteBtn}>Create</button>
+                </form>
+              )}
               {tickets.length === 0 && <p style={styles.empty}>No tickets linked to this lead.</p>}
               {tickets.map(t => (
                 <div key={t.ticket_id} style={styles.ticketRow}>
@@ -201,9 +258,10 @@ function scoreColor(score) {
 
 const styles = {
   page:         { padding:'24px', maxWidth:'1100px', margin:'0 auto' },
-  back:         { background:'none', border:'none', color:'#3b82f6', cursor:'pointer', fontSize:'0.9rem', marginBottom:'16px', padding:0 },
-  layout:       { display:'grid', gridTemplateColumns:'320px 1fr', gap:'24px', alignItems:'start' },
-  card:         { background:'#fff', borderRadius:'12px', padding:'24px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
+  topBar:       { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' },
+  back:         { background:'none', border:'none', color:'#3b82f6', cursor:'pointer', fontSize:'0.9rem', padding:0 },
+  eraseBtn:     { background:'#fee2e2', color:'#b91c1c', border:'1px solid #fca5a5', borderRadius:'6px', padding:'6px 14px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
+  card:{ background:'#fff', borderRadius:'12px', padding:'24px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
   name:         { margin:'0 0 4px', color:'#1e293b', fontSize:'1.3rem' },
   email:        { margin:'0 0 20px', color:'#64748b', fontSize:'0.9rem' },
   row:          { display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:'1px solid #f1f5f9' },
@@ -214,7 +272,10 @@ const styles = {
   select:       { padding:'4px 8px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.85rem' },
   rightPanel:   { display:'flex', flexDirection:'column', gap:'20px' },
   section:      { background:'#fff', borderRadius:'12px', padding:'20px', boxShadow:'0 2px 8px rgba(0,0,0,0.06)' },
-  sectionTitle: { margin:'0 0 16px', color:'#1e293b', fontSize:'1rem' },
+  sectionTitle:  { margin:0, color:'#1e293b', fontSize:'1rem' },
+  sectionHeader: { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' },
+  genBtn:        { background:'#f0fdf4', color:'#16a34a', border:'1px solid #bbf7d0', borderRadius:'6px', padding:'5px 12px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
+  ticketForm:    { display:'flex', gap:'8px', marginBottom:'12px', flexWrap:'wrap' },
   timeline:     { display:'flex', flexDirection:'column', gap:'12px', marginBottom:'16px' },
   logEntry:     { display:'flex', gap:'12px', alignItems:'flex-start' },
   logDot:       { width:'10px', height:'10px', borderRadius:'50%', background:'#3b82f6', marginTop:'4px', flexShrink:0 },

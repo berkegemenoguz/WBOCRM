@@ -17,7 +17,8 @@ All tests are located in `backend/tests/` and results saved in `backend/test_res
 | BDD | `tests/features/lead_registration.feature` | 2 scenarios | ✅ PASS |
 | BDD | `tests/features/lead_scoring.feature` | 3 scenarios | ✅ PASS |
 | BDD | `tests/features/ticket_creation.feature` | 2 scenarios | ✅ PASS |
-| **Total** | | **35 tests / 11 BDD scenarios** | ✅ All pass |
+| BDD | `tests/features/duplicate_email.feature` | 2 scenarios | ✅ PASS |
+| **Total** | | **35 tests / 13 BDD scenarios** | ✅ All pass |
 
 ---
 
@@ -181,3 +182,47 @@ Covers: US-04, FR-LM-03, FR-SC-01
 | NFR-SEC-01 | Passwords hashed with bcrypt | Unit test: hashPassword returns non-plaintext |
 | NFR-SEC-02 | JWT auth on all protected routes | Functional test: 401 without token |
 | NFR-SEC-03 | Role enforcement | Functional test: 403 for insufficient role |
+| NFR-ST-07 | GDPR/KVKK PII masking | leadController masks email/name for support role |
+| NFR-ST-07 | Right-to-erasure | DELETE /leads/:id/personal-data, /users/:id/personal-data |
+| NFR-ST-15 | Ticket archiving (365+ days) | archiveService daily cron + manual POST /tickets/archive |
+| NFR-SEC-04 | Idle session timeout | AuthContext 30-min inactivity auto-logout |
+| NFR-ST-14 | Offline draft caching | TicketPage localStorage pending ticket with retry |
+
+---
+
+## Feature: Duplicate Email Detection (`duplicate_email.feature`)
+
+**Scenario 1: Reject lead with existing email**
+```gherkin
+Given I am authenticated as a sales user
+And a lead with email "existing@test.wbocrm" already exists
+When I submit a new lead with email "existing@test.wbocrm"
+Then the response status should be 400
+And the response error should be "DUPLICATE_EMAIL"
+```
+Covers: US-03, FR-LM-02
+
+**Scenario 2: Frontend redirects to existing lead profile**
+```gherkin
+Given I am on the leads page
+When I create a lead with a duplicate email
+Then I should see an error message containing "DUPLICATE_EMAIL"
+And a link to the existing lead profile should be displayed
+```
+Covers: US-03, FR-LM-02
+
+---
+
+## Additional Coverage Notes
+
+The following features are implemented and verified via code review but do not yet have dedicated BDD scenarios:
+
+| Feature | Implementation | Verification Method |
+|---------|---------------|---------------------|
+| Ticket archiving | `archiveService.js` | Code review + manual API test |
+| Lead PII erasure | `leadController.erasePersonalData` | Code review + manual API test |
+| User PII erasure | `userController.erasePersonalData` | Code review + manual API test |
+| Idle session timeout | `AuthContext.jsx` (30 min) | Code review + manual UI test |
+| Offline draft caching | `TicketPage.jsx` localStorage | Code review + manual UI test |
+| PII masking for support | `leadController.getAll/getById` | Code review + manual API test |
+| Last admin guard | `userController.updateRole` | Code review + manual API test |

@@ -2,8 +2,106 @@
 > crm-backend@1.0.0 test:bdd
 > cucumber-js
 
-.............................................................................
+Feature: User Authentication (auth_login.feature)
 
+  Scenario: Successful login with valid credentials
+    Given a registered user with email "bdd_auth_sales@test.wbocrm" and role "sales"
+    When I log in with email "bdd_auth_sales@test.wbocrm" and password "BddAuth123!"
+    Then the response status should be 200
+    And the response should contain a token
+    And the token payload should include role "sales"
+    ✓ Passed
+
+  Scenario: Failed login with invalid password
+    When I log in with email "bdd_auth_sales@test.wbocrm" and password "WrongPass999!"
+    Then the response status should be 401
+    ✓ Passed
+
+  Scenario: Rejected request without token
+    When I request the leads list without a token
+    Then the response status should be 401
+    ✓ Passed
+
+  Scenario: Rejected request with insufficient role
+    Given I am authenticated as a support user
+    When I request the leads list
+    Then the response status should be 403
+    ✓ Passed
+
+Feature: Lead Registration (lead_registration.feature)
+
+  Scenario: Successfully register a new lead
+    Given I am authenticated as a sales user
+    When I submit a new lead with email "bdd_lead@test.wbocrm" and name "BDD Lead"
+    Then the response status should be 201
+    And the response should contain a lead_id
+    ✓ Passed
+
+  Scenario: Reject duplicate email registration
+    Given a lead with email "bdd_dup@test.wbocrm" already exists
+    When I submit a new lead with email "bdd_dup@test.wbocrm" and name "Dup Lead"
+    Then the response status should be 400
+    And the response error should be "DUPLICATE_EMAIL"
+    ✓ Passed
+
+Feature: Lead Priority Scoring (lead_scoring.feature)
+
+  Scenario: High engagement metrics receive high score
+    Given I am authenticated as a sales user
+    When I create a lead with metrics calls 20 meetings 5 budget 100 companySize "enterprise" emailOpens 20
+    Then the response status should be 201
+    And the lead priority_score should be greater than 70
+    ✓ Passed
+
+  Scenario: No engagement receives low score
+    Given I am authenticated as a sales user
+    When I create a lead with metrics calls 0 meetings 0 budget 0 companySize "small" emailOpens 0
+    Then the response status should be 201
+    And the lead priority_score should be less than 30
+    ✓ Passed
+
+  Scenario: Leads list sorted by priority score descending
+    Given I am authenticated as a sales user
+    When I retrieve all leads
+    Then the response status should be 200
+    And leads should be ordered by priority_score descending
+    ✓ Passed
+
+Feature: Support Ticket Creation (ticket_creation.feature)
+
+  Scenario: Successfully create a support ticket
+    Given I am authenticated as a support user
+    And a lead exists in the system
+    When I create a ticket with description "BDD test ticket" and priority "Low"
+    Then the response status should be 201
+    And the response should contain a ticket_id
+    ✓ Passed
+
+  Scenario: Update a ticket status
+    Given an existing support ticket
+    When I update the ticket status to "In Progress"
+    Then the response status should be 200
+    And the ticket status should be "In Progress"
+    ✓ Passed
+
+Feature: Duplicate Email Detection (duplicate_email.feature)
+
+  Scenario: Reject lead with existing email
+    Given I am authenticated as a sales user
+    And a lead with email "existing@test.wbocrm" already exists
+    When I submit a new lead with email "existing@test.wbocrm"
+    Then the response status should be 400
+    And the response error should be "DUPLICATE_EMAIL"
+    ✓ Passed
+
+  Scenario: Accept lead with unique email
+    Given I am authenticated as a sales user
+    When I submit a new lead with email "unique_bdd@test.wbocrm" and name "Unique Lead"
+    Then the response status should be 201
+    And the response should contain a lead_id
+    ✓ Passed
+
+-------------------------------------------------------
 13 scenarios (13 passed)
 51 steps (51 passed)
 0m18.896s (executing steps: 0m18.858s)

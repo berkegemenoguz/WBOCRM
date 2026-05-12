@@ -10,7 +10,9 @@ export default function LeadPage() {
   const [leads, setLeads]     = useState([]);
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [error, setError]     = useState('');
+  const [error, setError]         = useState('');
+  const [dupLeadId, setDupLeadId] = useState(null);
+  const [savedScore, setSavedScore] = useState(null);
 
   async function fetchLeads() {
     try {
@@ -24,12 +26,19 @@ export default function LeadPage() {
   useEffect(() => { fetchLeads(); }, []);
 
   async function handleCreate(form) {
+    setDupLeadId(null);
+    setSavedScore(null);
     try {
-      await api.post('/leads', form);
+      const { data: created } = await api.post('/leads', form);
+      setSavedScore(created.priority_score);
       setCreating(false);
       fetchLeads();
     } catch (err) {
-      setError(err.response?.data?.message || 'Create failed');
+      const data = err.response?.data;
+      if (data?.error === 'DUPLICATE_EMAIL' && data?.lead_id) {
+        setDupLeadId(data.lead_id);
+      }
+      setError(data?.message || 'Create failed');
     }
   }
 
@@ -60,7 +69,20 @@ export default function LeadPage() {
         <button onClick={() => { setCreating(true); setEditing(null); }} style={styles.addBtn}>+ New Lead</button>
       </div>
 
-      {error && <p style={styles.error}>{error}</p>}
+      {error && (
+        <p style={styles.error}>
+          {error}
+          {dupLeadId && (
+            <button onClick={() => navigate(`/leads/${dupLeadId}`)} style={styles.dupLink}>
+              View existing profile →
+            </button>
+          )}
+        </p>
+      )}
+
+      {savedScore !== null && (
+        <p style={styles.scoreNote}>✅ Lead saved — Priority Score: <strong>{savedScore}</strong></p>
+      )}
 
       {creating && (
         <div style={styles.formCard}>
@@ -76,6 +98,7 @@ export default function LeadPage() {
         </div>
       )}
 
+      <div className="table-scroll">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -98,7 +121,7 @@ export default function LeadPage() {
               <td style={styles.td}>{Number(l.deal_value || 0).toLocaleString()}</td>
               <td style={styles.td}>
                 <button onClick={() => navigate(`/leads/${l.lead_id}`)} style={styles.profileBtn}>Profile</button>
-                <button onClick={() => { setEditing(l); setCreating(false); }} style={styles.editBtn}>Edit</button>
+                <button onClick={() => { setEditing({ ...l, metrics: { calls: l.calls || 0, meetings: l.meetings || 0, budget: l.budget || 0, companySize: l.company_size || 'small', emailOpens: l.email_opens || 0 } }); setCreating(false); }} style={styles.editBtn}>Edit</button>
                 <button onClick={() => handleDelete(l.lead_id)} style={styles.delBtn}>Delete</button>
               </td>
             </tr>
@@ -108,6 +131,7 @@ export default function LeadPage() {
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -129,4 +153,6 @@ const styles = {
   profileBtn:{ background:'#f0fdf4', color:'#16a34a', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
   editBtn:  { background:'#e0f2fe', color:'#0369a1', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
   delBtn:   { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
+  dupLink:   { marginLeft:'12px', background:'none', border:'none', color:'#b91c1c', textDecoration:'underline', cursor:'pointer', fontSize:'0.85rem', fontWeight:'600' },
+  scoreNote: { background:'#f0fdf4', color:'#15803d', padding:'8px 12px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.85rem' },
 };

@@ -11,6 +11,10 @@ export default function TicketPage() {
   const [editing, setEditing]   = useState(null);
   const [creating, setCreating] = useState(false);
   const [error, setError]       = useState('');
+  const [query, setQuery]       = useState('');
+  const [pendingDraft, setPendingDraft] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('crm_pending_ticket')) || null; } catch { return null; }
+  });
 
   async function fetchAll() {
     try {
@@ -27,11 +31,30 @@ export default function TicketPage() {
   async function handleCreate(form) {
     try {
       await api.post('/tickets', form);
+      localStorage.removeItem('crm_pending_ticket');
+      setPendingDraft(null);
       setCreating(false);
       fetchAll();
     } catch (err) {
-      setError(err.response?.data?.message || 'Create failed');
+      // No server response = network/DB timeout — cache locally
+      if (!err.response) {
+        localStorage.setItem('crm_pending_ticket', JSON.stringify(form));
+        setPendingDraft(form);
+        setError('Server unreachable — ticket saved locally. Click "Retry" when connection is restored.');
+      } else {
+        setError(err.response?.data?.message || 'Create failed');
+      }
     }
+  }
+
+  async function retryPending() {
+    if (!pendingDraft) return;
+    await handleCreate(pendingDraft);
+  }
+
+  function dismissPending() {
+    localStorage.removeItem('crm_pending_ticket');
+    setPendingDraft(null);
   }
 
   async function handleUpdate(form) {
@@ -59,6 +82,15 @@ export default function TicketPage() {
     }
   }
 
+  const q = query.toLowerCase();
+  const visible = tickets.filter(t =>
+    !q ||
+    t.description.toLowerCase().includes(q) ||
+    t.priority_level.toLowerCase().includes(q) ||
+    t.status.toLowerCase().includes(q) ||
+    String(t.lead_id).includes(q)
+  );
+
   return (
     <div style={styles.page}>
       <div style={styles.header}>
@@ -66,7 +98,24 @@ export default function TicketPage() {
         <button onClick={() => { setCreating(true); setEditing(null); }} style={styles.addBtn}>+ New Ticket</button>
       </div>
 
+      {pendingDraft && (
+        <div style={styles.pending}>
+          <span>⚠️ You have an unsaved ticket draft: &ldquo;{pendingDraft.description}&rdquo;</span>
+          <button onClick={retryPending} style={styles.retryBtn}>Retry</button>
+          <button onClick={dismissPending} style={styles.dismissBtn}>Dismiss</button>
+        </div>
+      )}
+
       {error && <p style={styles.error}>{error}</p>}
+
+      <input
+        type="search"
+        placeholder="Search tickets by description, priority or status…"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        style={styles.search}
+        aria-label="Search tickets"
+      />
 
       {creating && (
         <div style={styles.formCard}>
@@ -82,6 +131,7 @@ export default function TicketPage() {
         </div>
       )}
 
+      <div className="table-scroll">
       <table style={styles.table}>
         <thead>
           <tr>
@@ -91,7 +141,7 @@ export default function TicketPage() {
           </tr>
         </thead>
         <tbody>
-          {tickets.map((t, i) => (
+          {visible.map((t, i) => (
             <tr key={t.ticket_id} style={i % 2 === 0 ? styles.rowEven : styles.rowOdd}>
               <td style={styles.td}>{t.ticket_id}</td>
               <td style={{ ...styles.td, maxWidth:'260px' }}>{t.description}</td>
@@ -112,11 +162,14 @@ export default function TicketPage() {
               </td>
             </tr>
           ))}
-          {tickets.length === 0 && (
-            <tr><td colSpan={6} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>No tickets yet</td></tr>
+          {visible.length === 0 && (
+            <tr><td colSpan={6} style={{ ...styles.td, textAlign:'center', color:'#94a3b8' }}>
+              {query ? 'No tickets match your search.' : 'No tickets yet'}
+            </td></tr>
           )}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
@@ -124,6 +177,7 @@ export default function TicketPage() {
 const styles = {
   page:     { padding:'24px' },
   header:   { display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' },
+  search:   { width:'100%', padding:'8px 12px', border:'1px solid #d1d5db', borderRadius:'6px', fontSize:'0.9rem', marginBottom:'16px', outline:'none' },
   heading:  { margin:0, color:'#1e293b' },
   addBtn:   { background:'#3b82f6', color:'#fff', border:'none', borderRadius:'6px', padding:'8px 16px', cursor:'pointer' },
   error:    { background:'#fee2e2', color:'#b91c1c', padding:'8px 12px', borderRadius:'6px', marginBottom:'12px', fontSize:'0.85rem' },
@@ -136,5 +190,8 @@ const styles = {
   rowOdd:   { background:'#f8fafc' },
   badge:    { color:'#fff', padding:'2px 8px', borderRadius:'12px', fontSize:'0.78rem', fontWeight:'600' },
   editBtn:  { background:'#e0f2fe', color:'#0369a1', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', marginRight:'6px', fontSize:'0.82rem' },
-  delBtn:   { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
+  delBtn:      { background:'#fee2e2', color:'#b91c1c', border:'none', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
+  pending:     { display:'flex', alignItems:'center', gap:'12px', background:'#fffbeb', border:'1px solid #fde68a', borderRadius:'6px', padding:'8px 12px', marginBottom:'12px', fontSize:'0.85rem', color:'#92400e', flexWrap:'wrap' },
+  retryBtn:    { background:'#f59e0b', color:'#fff', border:'none', borderRadius:'4px', padding:'4px 12px', cursor:'pointer', fontSize:'0.82rem', fontWeight:'600' },
+  dismissBtn:  { background:'none', border:'1px solid #d97706', color:'#92400e', borderRadius:'4px', padding:'4px 10px', cursor:'pointer', fontSize:'0.82rem' },
 };

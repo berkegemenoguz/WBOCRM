@@ -2,3 +2,20 @@
 > crm-backend@1.0.0 test:functional
 > jest tests/functional --forceExit
 
+ PASS  tests/functional/api.test.js
+  API Integration Tests
+    Lead Endpoints
+      ✓ POST /api/leads – should create a new lead and return 201 (156 ms)
+      ✓ POST /api/leads – should return 400 DUPLICATE_EMAIL for existing email (45 ms)
+      ✓ GET /api/leads – should return leads sorted by priority_score DESC (38 ms)
+    Ticket Endpoints
+      ✓ POST /api/tickets + PUT /api/tickets/:id – should create then update status (112 ms)
+    Authentication & Authorization
+      ✓ GET /api/leads – should return 401 without token (12 ms)
+      ✓ GET /api/leads – should return 403 for support role (insufficient permissions) (28 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       6 passed, 6 total
+Snapshots:   0 total
+Time:        2.847 s
+Ran all test suites matching /tests\/functional/i.

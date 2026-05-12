@@ -237,7 +237,168 @@
 - PUT /api/users/:id/role updates the role
 - Valid roles: admin, sales, support
 - Current user cannot change their own role
+- System prevents demoting the last remaining admin (409 error)
 
 **Role:** Admin  
 **Priority:** Medium  
 **READ Reference:** FR-UM-01, FR-UM-02
+
+---
+
+### US-15 – GDPR/KVKK Lead Data Erasure
+**As an** administrator,  
+**I want to** erase a lead's personal data upon request,  
+**So that** the organisation complies with GDPR/KVKK right-to-erasure obligations.
+
+**Acceptance Criteria:**
+- DELETE `/api/leads/:id/personal-data` anonymises email and contact name
+- All interaction logs for the lead are permanently deleted
+- Confirmation dialog shown before erasure
+- Only admin role can perform this action (403 for others)
+- Lead record remains with anonymised data (`[Erased]`, `erased_{id}@erased.invalid`)
+
+**BDD Scenario:**
+```gherkin
+Given I am authenticated as an admin user
+And a lead with id 5 exists in the system
+When I send DELETE to "/api/leads/5/personal-data"
+Then the response status should be 200
+And the lead email should be "erased_5@erased.invalid"
+And the lead contact_name should be "[Erased]"
+And the interaction logs for lead 5 should be empty
+```
+
+**Role:** Admin  
+**Priority:** High  
+**READ Reference:** NFR-ST-07
+
+---
+
+### US-16 – KVKK User Data Erasure
+**As an** administrator,  
+**I want to** erase a user's personal data,  
+**So that** the system complies with KVKK requirements.
+
+**Acceptance Criteria:**
+- DELETE `/api/users/:id/personal-data` anonymises user email and full name
+- Admin cannot erase their own account data
+- User record remains with anonymised fields
+- Only admin role can perform this action
+
+**BDD Scenario:**
+```gherkin
+Given I am authenticated as an admin user
+And a user with id 3 exists
+When I send DELETE to "/api/users/3/personal-data"
+Then the response status should be 200
+And the user full_name should be "[Erased]"
+And the user email should be "erased_3@erased.invalid"
+```
+
+**Role:** Admin  
+**Priority:** High  
+**READ Reference:** NFR-ST-07
+
+---
+
+### US-17 – PII Masking for Support Role
+**As a** support agent viewing lead information,  
+**I want** personal data (email, name) to be masked,  
+**So that** data minimisation principles are enforced.
+
+**Acceptance Criteria:**
+- GET `/api/leads` returns masked email and name for support role users
+- Email masked as `a***@domain.com`, name masked as `A. L***`
+- Sales and admin roles see full unmasked data
+- Dashboard top-5 leads also masked for support role
+
+**BDD Scenario:**
+```gherkin
+Given I am authenticated as a support user
+When I request the leads list
+Then the response status should be 200
+And lead emails should be masked (e.g. "a***@example.com")
+And lead names should be masked (e.g. "A. L***")
+```
+
+**Role:** Support  
+**Priority:** High  
+**READ Reference:** NFR-ST-07
+
+---
+
+## Epic 7: Data Lifecycle & Session Security
+
+### US-18 – Automatic Ticket Archiving
+**As an** administrator,  
+**I want** resolved/closed tickets older than 365 days to be automatically archived,  
+**So that** the active ticket table stays performant and clean.
+
+**Acceptance Criteria:**
+- Daily cron job moves stale tickets (Resolved/Closed, updated_at > 365 days) to ArchivedTicket table
+- Archive operation runs within a database transaction (INSERT then DELETE)
+- Admin can manually trigger archiving via POST `/api/tickets/archive`
+- Response includes the count of archived tickets
+
+**BDD Scenario:**
+```gherkin
+Given I am authenticated as an admin user
+When I send POST to "/api/tickets/archive"
+Then the response status should be 200
+And the response should contain "archivedCount"
+```
+
+**Role:** Admin  
+**Priority:** Medium  
+**READ Reference:** NFR-ST-15
+
+---
+
+### US-19 – Idle Session Timeout
+**As a** CRM user,  
+**I want** my session to automatically log out after 30 minutes of inactivity,  
+**So that** unattended sessions are secured.
+
+**Acceptance Criteria:**
+- 30-minute idle timer resets on user activity (mousemove, keydown, scroll, touchstart)
+- Automatic logout clears JWT token from localStorage and redirects to login
+- Timer is managed in AuthContext and applies to all authenticated pages
+
+**BDD Scenario:**
+```gherkin
+Given I am authenticated and on any page
+When 30 minutes pass without any user activity
+Then the session token should be cleared
+And I should be redirected to the login page
+```
+
+**Role:** All  
+**Priority:** Medium  
+**READ Reference:** NFR-SEC-04
+
+---
+
+### US-20 – Offline Ticket Draft Caching
+**As a** support agent,  
+**I want** my unsaved ticket draft to be preserved locally when the server is unreachable,  
+**So that** I do not lose my work.
+
+**Acceptance Criteria:**
+- Failed ticket creation stores form data in localStorage (`crm_pending_ticket`)
+- On next page load, a banner shows with "Retry" and "Dismiss" options
+- Successful retry clears the cached draft from localStorage
+- Dismiss removes the cached draft without sending
+
+**BDD Scenario:**
+```gherkin
+Given I have filled a ticket form with description "Network issue"
+When the server is unreachable and I submit the form
+Then the ticket data should be saved to localStorage
+And when the server becomes available and I click Retry
+Then the ticket should be created successfully
+And the localStorage draft should be cleared
+```
+
+**Role:** Support, Admin  
+**Priority:** Low  
+**READ Reference:** NFR-ST-14

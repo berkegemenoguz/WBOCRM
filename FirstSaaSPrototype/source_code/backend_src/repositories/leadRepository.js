@@ -17,17 +17,17 @@ async function findByEmail(email) {
   return rows[0] || null;
 }
 
-async function create({ email, contact_name, priority_score, pipeline_stage = 'New', deal_value = 0, campaign_id, user_id }) {
+async function create({ email, contact_name, priority_score, pipeline_stage = 'New', deal_value = 0, campaign_id, calls = 0, meetings = 0, budget = 0, company_size = 'small', email_opens = 0, user_id }) {
   const { rows } = await pool.query(
-    `INSERT INTO Lead (email, contact_name, priority_score, pipeline_stage, deal_value, campaign_id, user_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [email, contact_name, priority_score, pipeline_stage, deal_value, campaign_id || null, user_id]
+    `INSERT INTO Lead (email, contact_name, priority_score, pipeline_stage, deal_value, campaign_id, calls, meetings, budget, company_size, email_opens, user_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+    [email, contact_name, priority_score, pipeline_stage, deal_value, campaign_id || null, calls, meetings, budget, company_size, email_opens, user_id]
   );
   return rows[0];
 }
 
 async function update(id, fields) {
-  const allowed = ['contact_name', 'email', 'pipeline_stage', 'priority_score', 'deal_value', 'campaign_id', 'user_id'];
+  const allowed = ['contact_name', 'email', 'pipeline_stage', 'priority_score', 'deal_value', 'campaign_id', 'calls', 'meetings', 'budget', 'company_size', 'email_opens', 'user_id'];
   const setClauses = [];
   const values = [];
   let idx = 1;
@@ -48,9 +48,25 @@ async function update(id, fields) {
   return rows[0] || null;
 }
 
+async function removeRelated(id) {
+  await pool.query('DELETE FROM InteractionLog  WHERE lead_id = $1', [id]);
+  await pool.query('DELETE FROM SupportTicket   WHERE lead_id = $1', [id]);
+}
+
 async function remove(id) {
   const { rowCount } = await pool.query('DELETE FROM Lead WHERE lead_id = $1', [id]);
   return rowCount > 0;
+}
+
+// Anonymise PII and purge interaction logs — GDPR/KVKK right-to-erasure
+async function erasePersonalData(id) {
+  const { rowCount } = await pool.query(
+    `UPDATE Lead SET email = 'erased_' || lead_id || '@erased.invalid', contact_name = '[Erased]' WHERE lead_id = $1`,
+    [id]
+  );
+  if (rowCount === 0) return false;
+  await pool.query('DELETE FROM InteractionLog WHERE lead_id = $1', [id]);
+  return true;
 }
 
 async function topByScore(limit = 5) {
@@ -78,4 +94,4 @@ async function monthlyRevenue() {
   return parseFloat(rows[0].revenue);
 }
 
-module.exports = { findAll, findById, findByEmail, create, update, remove, topByScore, countActive, monthlyRevenue };
+module.exports = { findAll, findById, findByEmail, create, update, removeRelated, remove, erasePersonalData, topByScore, countActive, monthlyRevenue };

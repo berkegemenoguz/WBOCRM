@@ -1,4 +1,0 @@
-
-> crm-backend@1.0.0 test:unit
-> jest tests/unit --forceExit
-

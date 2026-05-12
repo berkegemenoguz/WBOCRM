@@ -57,7 +57,7 @@
 ### Phase 7 – Testing
 - **18 unit tests** (Jest + mocked repositories): authService, scoringService, ticketService
 - **6 functional tests** (Jest + Supertest, live DB): lead CRUD, ticket update, auth 401/403
-- **11 BDD scenarios** (Cucumber): lead registration, ticket creation, auth flows, scoring
+- **13 BDD scenarios** (Cucumber): lead registration, duplicate email, ticket creation, auth flows, scoring
 - All tests passing; results saved to `backend/test_results/`
 
 ### Phase 8 – Deployment Configuration
@@ -66,11 +66,32 @@
 - `deployment_info.txt`: step-by-step deployment guide
 
 ### Phase 9 – Documentation
-- `docs/architecture_description.md`: 3-tier diagram, design decisions, schema
-- `docs/user_stories.md`: 14 user stories across 6 epics with READ references
+- `docs/architecture_description.md`: 3-tier diagram, UML deployment/component diagrams, design decisions, schema
+- `docs/user_stories.md`: 20 user stories across 7 epics with READ references
 - `docs/acceptance_tests.md`: BDD scenarios mapped to user stories and NFRs
 - `docs/implementation_summary.md`: this file
 - `README.md`: full technical documentation for public repository
+
+### Phase 10 – GDPR/KVKK Compliance
+- PII masking in `leadController.js` for support role (`maskEmail`, `maskName` functions)
+- `DELETE /api/leads/:id/personal-data` — anonymises lead PII and deletes interaction logs
+- `DELETE /api/users/:id/personal-data` — anonymises user account PII
+- Admin self-erasure prevention and last-admin demotion guard in `userController.js`
+
+### Phase 11 – Ticket Archiving
+- `archiveService.js`: daily cron job (setInterval 24h) moves resolved/closed tickets older than 365 days to `ArchivedTicket` table
+- `ArchivedTicket` table added to `schema.sql`
+- `POST /api/tickets/archive` manual trigger endpoint (admin only)
+- Transactional INSERT-then-DELETE within a PostgreSQL transaction (BEGIN/COMMIT/ROLLBACK)
+
+### Phase 12 – Session Security & Offline Resilience
+- 30-minute idle timeout in `AuthContext.jsx` with activity event listeners (mousemove, mousedown, keydown, scroll, touchstart)
+- Offline ticket draft caching in `TicketPage.jsx` via localStorage (`crm_pending_ticket`) with Retry/Dismiss UI
+- `RoleRoute` component in `App.jsx` for declarative RBAC route protection
+
+### Phase 13 – Demo Data Seeding
+- `POST /api/setup` endpoint for one-time demo data seeding (3 users, 5 leads, 2 tickets)
+- Accessible via API without CLI access — alternative to running `seed.js` manually
 
 ---
 
@@ -110,7 +131,11 @@
 | FR-DOC-15 | CSV export | ✅ |
 | FR-UM-01/02 | User listing / role update | ✅ |
 | NFR-ST-05 | Optimistic locking | ✅ |
+| NFR-ST-07 | GDPR/KVKK PII masking and erasure | ✅ |
 | NFR-ST-12 | Dashboard 2s auto-refresh | ✅ |
+| NFR-ST-14 | Offline ticket draft caching | ✅ |
+| NFR-ST-15 | Ticket archiving (365+ days) | ✅ |
+| NFR-SEC-04 | Idle session timeout (30 min) | ✅ |
 | Section 3.8.3 | Unified Customer Profile | ✅ |
 | Section 14 | BDD acceptance tests | ✅ |
 

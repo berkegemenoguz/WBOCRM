@@ -30,6 +30,7 @@ WBOCRM follows a classic **3-tier web application architecture** with a clear se
 │    leadService     CRUD + scoring               │
 │    scoringService  0-100 priority algorithm     │
 │    ticketService   optimistic locking           │
+│    archiveService  daily cron ticket archiving  │
 └──────────────────────┬──────────────────────────┘
                        │  pg (node-postgres)
                        │  SSL enforced on Render
@@ -38,10 +39,11 @@ WBOCRM follows a classic **3-tier web application architecture** with a clear se
 │  PostgreSQL 15 (Render managed)                 │
 │                                                 │
 │  Tables:                                        │
-│    UserAccount   – users with RBAC roles        │
-│    Lead          – leads with scoring + stages  │
+│    UserAccount    – users with RBAC roles       │
+│    Lead           – leads with scoring + stages │
 │    InteractionLog – notes per lead              │
 │    SupportTicket  – tickets linked to leads     │
+│    ArchivedTicket – archived old tickets        │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -55,6 +57,8 @@ WBOCRM follows a classic **3-tier web application architecture** with a clear se
 | UI | React 18 | Component-based SPA |
 | Routing | React Router v6 | Client-side routing with protected routes |
 | Auth state | React Context API | JWT + user object available app-wide |
+| Session security | Idle timeout (30 min) | Auto-logout on inactivity via activity listeners |
+| Offline resilience | localStorage | Draft ticket caching with retry/dismiss UI |
 | HTTP | Axios | Centralised API client with auth header injection |
 | Deployment | Render Static Site | Served as pre-built static files with SPA rewrite |
 
@@ -111,17 +115,121 @@ PUT `/api/tickets/:id` requires `updated_at` in the request body. If the DB reco
 ## Database Schema
 
 ```sql
-UserAccount (user_id PK, user_email UNIQUE, user_password, rbac_role, full_name, created_at)
-Lead        (lead_id PK, email UNIQUE, contact_name, priority_score, pipeline_stage,
-             deal_value, campaign_id, user_id FK→UserAccount, created_at)
+UserAccount    (user_id PK, user_email UNIQUE, user_password, rbac_role, full_name, created_at)
+Lead           (lead_id PK, email UNIQUE, contact_name, priority_score, pipeline_stage,
+                deal_value, campaign_id, calls, meetings, budget, company_size, email_opens,
+                user_id FK→UserAccount, created_at)
 InteractionLog (log_id PK, note_text, timestamp, lead_id FK→Lead, user_id FK→UserAccount)
 SupportTicket  (ticket_id PK, description, status, priority_level, updated_at,
-                lead_id FK→Lead, assigned_to FK→UserAccount)
+                lead_id FK→Lead, user_id FK→UserAccount, created_at)
+ArchivedTicket (ticket_id PK, description, status, priority_level,
+                lead_id, user_id, created_at, updated_at, archived_at)
 ```
 
 ### Foreign Key Cascade Strategy
-- Lead deleted → InteractionLog and SupportTicket rows deleted (application-level, in order)
+- Lead deleted → InteractionLog and SupportTicket rows deleted (ON DELETE CASCADE in schema)
 - UserAccount deleted → Lead.user_id set to NULL (no orphan leads)
+
+---
+
+## Data Archiving Strategy
+
+`archiveService.js` manages automatic ticket lifecycle:
+
+- **Daily cron job** runs via `setInterval(24h)` starting on backend boot
+- Moves tickets with status `Resolved` or `Closed` and `updated_at` older than 365 days
+- Uses a PostgreSQL transaction: INSERT into `ArchivedTicket` → DELETE from `SupportTicket`
+- Admin can trigger archiving manually via `POST /api/tickets/archive`
+- Response returns `{ archivedCount }` with the number of tickets moved
+
+---
+
+## GDPR/KVKK Compliance
+
+### PII Masking (Data Minimisation)
+- Support-role users receive masked lead data: email as `a***@domain.com`, name as `A. L***`
+- Masking applied in `leadController.js` before response, based on `req.user.rbac_role`
+- Sales and admin roles see full unmasked data
+
+### Right-to-Erasure Endpoints
+- `DELETE /api/leads/:id/personal-data` — anonymises lead email/name, deletes all interaction logs
+- `DELETE /api/users/:id/personal-data` — anonymises user email/full_name
+- Admin-only access; admin cannot erase their own account
+- Last-admin guard prevents demoting the sole remaining admin (409 error)
+
+---
+
+## UML Deployment Diagram
+
+```
+┌──────────────────────┐       HTTPS        ┌──────────────────────┐
+│   Client Browser     │ ◄────────────────► │  Vercel CDN          │
+│   (Any Device)       │                    │  Static Site         │
+│                      │                    │  React 18 + Vite     │
+└──────────────────────┘                    └──────────────────────┘
+                                                     │
+                                              Axios / JSON
+                                              Bearer JWT
+                                                     │
+                                                     ▼
+                                            ┌──────────────────────┐
+                                            │  Render Web Service  │
+                                            │  Node.js 20 LTS     │
+                                            │  Express 4.18       │
+                                            │  Port 5000          │
+                                            └──────────┬───────────┘
+                                                       │
+                                                pg + SSL
+                                                       │
+                                                       ▼
+                                            ┌──────────────────────┐
+                                            │  Render PostgreSQL   │
+                                            │  PostgreSQL 15       │
+                                            │  Frankfurt (EU)      │
+                                            │  Managed + SSL       │
+                                            └──────────────────────┘
+```
+
+## UML Component Diagram (Backend Layers)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                      EXPRESS APPLICATION                        │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                    MIDDLEWARE LAYER                       │   │
+│  │  authMiddleware (JWT verify) │ rbacMiddleware (roles)    │   │
+│  │  express-validator (input)  │ cors (origin filter)      │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                   CONTROLLER LAYER                       │   │
+│  │  authController │ leadController │ ticketController      │   │
+│  │  dashboardController │ userController │ logController    │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                    SERVICE LAYER                         │   │
+│  │  authService │ leadService │ ticketService               │   │
+│  │  scoringService │ archiveService                         │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                  REPOSITORY LAYER                        │   │
+│  │  userRepository │ leadRepository │ ticketRepository      │   │
+│  │  logRepository                                           │   │
+│  └──────────────────────────────────────────────────────────┘   │
+│                              │                                  │
+│                              ▼                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │                   DATABASE LAYER                         │   │
+│  │  pool.js (pg.Pool + SSL) │ schema.sql │ init.js │ seed  │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 

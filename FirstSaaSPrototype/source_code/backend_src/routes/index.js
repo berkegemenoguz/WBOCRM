@@ -7,6 +7,7 @@ const logController     = require('../controllers/logController');
 const ticketController     = require('../controllers/ticketController');
 const dashboardController  = require('../controllers/dashboardController');
 const userController       = require('../controllers/userController');
+const { archiveOldTickets } = require('../services/archiveService');
 
 const router = Router();
 
@@ -14,13 +15,58 @@ const router = Router();
 router.post('/auth/register', authController.register);
 router.post('/auth/login',    authController.login);
 
-// Leads (sales + admin)
-router.get('/leads/export/csv', authMiddleware, allowRoles('sales', 'admin'), leadController.exportCsv);
-router.get('/leads',            authMiddleware, allowRoles('sales', 'admin'), leadController.getAll);
-router.post('/leads',           authMiddleware, allowRoles('sales', 'admin'), leadController.create);
-router.get('/leads/:id',        authMiddleware, allowRoles('sales', 'admin'), leadController.getById);
-router.put('/leads/:id',        authMiddleware, allowRoles('sales', 'admin'), leadController.update);
-router.delete('/leads/:id',     authMiddleware, allowRoles('sales', 'admin'), leadController.remove);
+// One-time setup endpoint — seeds demo data
+router.post('/setup', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const pool   = require('../db/pool');
+    const adminHash   = await bcrypt.hash('Admin123!', 12);
+    const salesHash   = await bcrypt.hash('Sales123!', 12);
+    const supportHash = await bcrypt.hash('Support123!', 12);
+    const { rows: users } = await pool.query(`
+      INSERT INTO UserAccount (user_email, user_password, rbac_role, full_name) VALUES
+        ('admin@crm.com',   $1, 'admin',   'System Admin'),
+        ('sales@crm.com',   $2, 'sales',   'Sales Rep'),
+        ('support@crm.com', $3, 'support', 'Support Staff')
+      ON CONFLICT (user_email) DO NOTHING
+      RETURNING user_id, rbac_role
+    `, [adminHash, salesHash, supportHash]);
+    const salesUser   = users.find(u => u.rbac_role === 'sales');
+    const supportUser = users.find(u => u.rbac_role === 'support');
+    if (salesUser) {
+      const { rows: leads } = await pool.query(`
+        INSERT INTO Lead (email, contact_name, priority_score, pipeline_stage, user_id) VALUES
+          ('alice@example.com', 'Alice Johnson', 85.00, 'Qualified', $1),
+          ('bob@example.com',   'Bob Smith',     62.50, 'Contacted', $1),
+          ('carol@example.com', 'Carol White',   91.00, 'New',       $1),
+          ('dave@example.com',  'Dave Brown',    45.00, 'New',       $1),
+          ('eve@example.com',   'Eve Davis',     73.00, 'Contacted', $1)
+        ON CONFLICT (email) DO NOTHING RETURNING lead_id
+      `, [salesUser.user_id]);
+      if (leads.length >= 2 && supportUser) {
+        await pool.query(`
+          INSERT INTO SupportTicket (description, priority_level, status, lead_id, user_id) VALUES
+            ('Cannot log into account',  'High',   'Open',        $1, $3),
+            ('Invoice amount incorrect', 'Medium', 'In Progress', $2, $3)
+          ON CONFLICT DO NOTHING
+        `, [leads[0].lead_id, leads[1].lead_id, supportUser.user_id]);
+      }
+    }
+    res.json({ message: 'Setup complete' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Leads (read: all roles; write: sales + admin only)
+router.get('/leads/export/csv',          authMiddleware, allowRoles('sales', 'admin'), leadController.exportCsv);
+router.get('/leads',                     authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getAll);
+router.post('/leads',                    authMiddleware, allowRoles('sales', 'admin'), leadController.create);
+router.get('/leads/:id',                 authMiddleware, allowRoles('sales', 'admin', 'support'), leadController.getById);
+router.put('/leads/:id',                 authMiddleware, allowRoles('sales', 'admin'), leadController.update);
+router.delete('/leads/:id',              authMiddleware, allowRoles('sales', 'admin'), leadController.remove);
+// GDPR right-to-erasure — admin only
+router.delete('/leads/:id/personal-data', authMiddleware, allowRoles('admin'), leadController.erasePersonalData);
 
 // Interaction logs
 router.get('/leads/:id/logs',  authMiddleware, logController.getByLead);
@@ -37,7 +83,15 @@ router.delete('/tickets/:id', authMiddleware, allowRoles('support', 'admin'), ti
 router.get('/dashboard', authMiddleware, dashboardController.get);
 
 // Users (admin only)
-router.get('/users',             authMiddleware, allowRoles('admin'), userController.getAll);
-router.put('/users/:id/role',    authMiddleware, allowRoles('admin'), userController.updateRole);
+router.get('/users',                       authMiddleware, allowRoles('admin'), userController.getAll);
+router.put('/users/:id/role',              authMiddleware, allowRoles('admin'), userController.updateRole);
+// KVKK right-to-erasure — admin only
+router.delete('/users/:id/personal-data', authMiddleware, allowRoles('admin'), userController.erasePersonalData);
+
+// Manual archive trigger (admin only — NFR-ST-15)
+router.post('/tickets/archive', authMiddleware, allowRoles('admin'), async (_req, res) => {
+  const count = await archiveOldTickets();
+  res.json({ archived: count });
+});
 
 module.exports = router;
