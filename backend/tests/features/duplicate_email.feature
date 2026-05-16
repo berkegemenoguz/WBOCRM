@@ -9,7 +9,7 @@ Feature: Duplicate Email Rejection
   Scenario: Reject registration with an already-existing email
     Given a lead with email "bdd_dup@test.wbocrm" already exists
     When I submit a new lead with email "bdd_dup@test.wbocrm" and name "Duplicate Lead"
-    Then the response status should be 400
+    Then the response status should be 409
     And the response error should be "DUPLICATE_EMAIL"
 
   Scenario: Allow registration with a unique email

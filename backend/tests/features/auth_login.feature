@@ -19,5 +19,5 @@ Feature: User Authentication
 
   Scenario: Rejected request with insufficient role
     Given I am authenticated as a support user
-    When I request the leads list
+    When I attempt to create a lead as a support user
     Then the response status should be 403

@@ -149,6 +149,13 @@ When('I request the leads list', async () => {
     .set('Authorization', `Bearer ${supportToken}`);
 });
 
+When('I attempt to create a lead as a support user', async () => {
+  lastResponse = await request(app)
+    .post('/api/leads')
+    .set('Authorization', `Bearer ${supportToken}`)
+    .send({ email: 'rbac_test@test.wbocrm', contact_name: 'RBAC Test', metrics: {} });
+});
+
 When('I create a ticket with description {string} and priority {string}', async (desc, priority) => {
   lastResponse = await request(app)
     .post('/api/tickets')

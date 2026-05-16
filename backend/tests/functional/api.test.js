@@ -64,13 +64,13 @@ describe('POST /api/leads', () => {
     testLeadId = res.body.lead_id;
   });
 
-  test('returns 400 DUPLICATE_EMAIL for already-existing email', async () => {
+  test('returns 409 DUPLICATE_EMAIL for already-existing email', async () => {
     const res = await request(app)
       .post('/api/leads')
       .set('Authorization', `Bearer ${salesToken}`)
       .send({ email: LEAD_EMAIL, contact_name: 'Dup Lead', metrics: {} });
 
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(409);
     expect(res.body.error).toBe('DUPLICATE_EMAIL');
   });
 });
@@ -236,8 +236,9 @@ describe('Auth middleware', () => {
 
   test('returns 403 when role is insufficient', async () => {
     const res = await request(app)
-      .get('/api/leads')
-      .set('Authorization', `Bearer ${supportToken}`);
+      .post('/api/leads')
+      .set('Authorization', `Bearer ${supportToken}`)
+      .send({ email: 'rbac_test@test.wbocrm', contact_name: 'RBAC Test', metrics: {} });
     expect(res.status).toBe(403);
   });
 });
